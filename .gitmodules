@@ -1,0 +1,3 @@
+[submodule "scripts/xml"]
+	path = scripts/xml
+	url = https://github.com/manoelcampos/xml2lua

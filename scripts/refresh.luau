@@ -10,7 +10,7 @@ local fileDir = "project/src/layout.xml"
 local extractedTypes = { _all = {} }
 if fs.isFile(fileDir) then
 	local file = fs.readFile(fileDir)
-	local handler = require("xml/tree"):new()
+	local handler = require("xml/xmlhandler/tree"):new()
 	require("xml/xml2lua").parser(handler):parse(file)
 
 	local function iterateXML(startingPoint)
