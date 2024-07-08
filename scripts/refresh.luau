@@ -6,6 +6,8 @@ local luau = require("@lune/luau")
 local outputDir = "project/template/types/XMLTypeDefs.luau"
 local fileDir = "project/src/layout.xml"
 
+fs.writeFile(outputDir, "return nil") -- make temporary output file
+
 --> Iterate through XML to get all actors, their names and types
 local extractedTypes = { _all = {} }
 if fs.isFile(fileDir) then
