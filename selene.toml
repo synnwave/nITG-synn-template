@@ -1,0 +1,8 @@
+exclude = ["DO_NOT_MODIFY-output/*"]
+std = "luau"
+[lints]
+manual_table_clone = "allow"
+multiple_statements = "allow"
+parenthese_conditions = "allow"
+undefined_variable = "allow"
+unscoped_variables = "allow"
