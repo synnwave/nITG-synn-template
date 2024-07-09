@@ -8,7 +8,6 @@
 local T = require("types/TypeDefs")
 local XMLTypes = require("types/XMLTypeDefs")
 
-local display = DISPLAY :: T.DISPLAY
 local globals = {
 	foreground = foreground :: T.ActorFrame,
 	ROOT = ROOT :: string,
@@ -18,13 +17,6 @@ local globals = {
 	clearRequireCache = clearRequireCache :: () -> (),
 
 	synn_env = synn_env :: { [any]: any },
-
-	SCX = SCREEN_CENTER_X :: number,
-	SCY = SCREEN_CENTER_Y :: number,
-	SW = SCREEN_WIDTH :: number,
-	SH = SCREEN_HEIGHT :: number,
-	DW = display:GetDisplayWidth(),
-	DH = display:GetDisplayHeight(),
 
 	--> Shared Template Variables
 	Players = {} :: { T.Player },
@@ -262,5 +254,13 @@ local globals = {
 }
 
 setmetatable(globals, { __index = _G.synn_env or {} })
---assert(globals.clearRequireCache ~= nil, "Global template variables didn't load properly")
+if synn_env then
+	globals.SCX = SCREEN_CENTER_X :: number
+	globals.SCY = SCREEN_CENTER_Y :: number
+	globals.SW = SCREEN_WIDTH :: number
+	globals.SH = SCREEN_HEIGHT :: number
+	globals.DW = globals.DISPLAY:GetDisplayWidth()
+	globals.DH = globals.DISPLAY:GetDisplayHeight()
+end
+
 return globals
