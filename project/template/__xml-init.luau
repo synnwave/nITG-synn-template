@@ -97,8 +97,11 @@ return function(self: ActorFrame)
 		synn_env.table.clone = table.clone or cloneTable
 		synn_env.table.clear = table.clear
 			or function(t)
-				for k, v in pairs(t) do
-					t[k] = nil
+				for _ in ipairs(t) do
+					table.remove(t)
+				end
+				for i in pairs(t) do
+					t[i] = nil
 				end
 				return t
 			end
