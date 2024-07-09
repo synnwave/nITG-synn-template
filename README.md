@@ -14,6 +14,7 @@ XeroOl and all [Mirin Template](https://github.com/XeroOl/notitg-mirin/) contrib
 
 - Most Luau functions backported to Lua 5.0 using [Darklua](https://github.com/seaofvoices/darklua)
 (string, table & math libraries, string interpolation, type-checking, compound operators)
+
 (NOTE: continue statements not supported, see [Darklua issue #202](https://github.com/seaofvoices/darklua/issues/202))
 
 - Fixes Lua 5.0 for loop bugs
