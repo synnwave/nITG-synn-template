@@ -8,6 +8,7 @@
 local T = require("types/TypeDefs")
 local XMLTypes = require("types/XMLTypeDefs")
 
+local display = DISPLAY :: T.DISPLAY
 local globals = {
 	foreground = foreground :: T.ActorFrame,
 	ROOT = ROOT :: string,
@@ -17,6 +18,13 @@ local globals = {
 	clearRequireCache = clearRequireCache :: () -> (),
 
 	synn_env = synn_env :: { [any]: any },
+
+	SCX = SCREEN_CENTER_X :: number,
+	SCY = SCREEN_CENTER_Y :: number,
+	SW = SCREEN_WIDTH :: number,
+	SH = SCREEN_HEIGHT :: number,
+	DW = display:GetDisplayWidth(),
+	DH = display:GetDisplayHeight(),
 
 	--> Shared Template Variables
 	Players = {} :: { T.Player },
