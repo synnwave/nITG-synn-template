@@ -4,6 +4,8 @@ This template is a complete rewrite of the [Mirin Template](https://github.com/X
 
 The goal of this template is to have auto-completion & strict typing, and to avoid global variables as much as possible when writing scripts.
 
+## DISCLAIMER
+
 Note: this template is not intended to be used by beginners, if you're a beginner please use the [Mirin Template](https://github.com/XeroOl/notitg-mirin/) instead !
 
 ## Credits
