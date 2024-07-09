@@ -349,7 +349,7 @@ do --> "setAlias", "setModDefault", "setAux", "makeNode", "defineMod"
 	internals.__nodes = {} :: { INTERNAL_makeNode }
 	type makeNode_props = {
 		inputMod: string | { string },
-		outputMod: string | { string },
+		outputMod: (string | { string })?,
 		method: (...number) -> ...number,
 
 		defer: boolean?,
@@ -662,7 +662,7 @@ do --> Runtime
 			for i, mod in pairs(node.inputs) do
 				node.inputs[i] = safeNormalizeModName(mod)
 			end
-			for i, mod in pairs(node.outputs) do
+			for i, mod in pairs(node.outputs or {}) do
 				node.outputs[i] = safeNormalizeModName(mod)
 			end
 		end
@@ -688,7 +688,7 @@ do --> Runtime
 		do --> Make terminators
 			local terminators = {}
 			for _, node in ipairs(internals.__nodes) do
-				for _, mod in ipairs(node.outputs) do
+				for _, mod in ipairs(node.outputs or {}) do
 					terminators[mod] = true
 				end
 			end
@@ -731,7 +731,7 @@ do --> Runtime
 				end
 			end
 
-			for _, output in ipairs(node.outputs) do
+			for _, output in ipairs(node.outputs or {}) do
 				if table.find(node.inputs, output) then
 					nodeStart[output][lockedNode] = true
 					lastNode[output] = { node }
@@ -769,13 +769,16 @@ do --> Runtime
 				appendInputs()
 				nodeCode ..= "\n"
 			else
-				for i, mod in ipairs(node.outputs) do
-					appendIndex(i, ",")
-					nodeCode ..= `\n\nnode.outs[playerId][{escapeString(mod)}]`
+				if node.outputs then
+					for i, mod in ipairs(node.outputs) do
+						appendIndex(i, ",")
+						nodeCode ..= `\n\nnode.outs[playerId][{escapeString(mod)}]`
+					end
+					if node.outputs[1] then
+						nodeCode ..= " = "
+					end
 				end
-				if node.outputs[1] then
-					nodeCode ..= " = "
-				end
+
 				nodeCode ..= "node.method("
 				appendInputs()
 				nodeCode ..= "\n\n, playerId)\n"
