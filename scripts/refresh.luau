@@ -17,6 +17,10 @@ if fs.isFile(fileDir) then
 
 	local function iterateXML(startingPoint)
 		for _, actorLayer in startingPoint do
+			if actorLayer[1] then
+				iterateXML(actorLayer)
+				continue
+			end
 			if actorLayer.children then iterateXML(actorLayer.children) end
 
 			local attributes = actorLayer._attr
@@ -30,7 +34,6 @@ if fs.isFile(fileDir) then
 			end
 		end
 	end
-	iterateXML(handler.root.Layer.children.Layer)
 	iterateXML(handler.root)
 end
 
