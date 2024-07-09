@@ -16,6 +16,8 @@ local globals = {
 	normalizePath = normalizePath :: (string) -> string,
 	clearRequireCache = clearRequireCache :: () -> (),
 
+	synn_env = synn_env :: { [any]: any },
+
 	--> Shared Template Variables
 	Players = {} :: { T.Player },
 	PLAYER_COUNT = 8,
