@@ -558,7 +558,7 @@ do --> Runtime
 			__newindex = function(_, modName, modValue)
 				modName = normalizeModName(modName)
 				playerMods[modName] = modValue
-				if modValue then poptionsLoggingTarget[playerId][modName] = true end
+				if modValue and poptionsLoggingTarget then poptionsLoggingTarget[playerId][modName] = true end
 			end,
 		}
 		poptions[playerId] = setmetatable({}, thisMetatable) :: any
@@ -902,8 +902,8 @@ do --> Runtime
 			if not func then break end
 
 			local measure = func.time and time or beat
-			if (func.length and func.mods) and measure < func.beat + func.length then
-				poptionsLoggingTarget = func.mods
+			if func.length and measure < func.beat + func.length then
+				poptionsLoggingTarget = func.mods :: any
 				func.method(measure, time, deltaTime, poptions)
 			else
 				if func.mods then
