@@ -803,7 +803,7 @@ export type Model = Actor & {
 ----> CLASS: Polygon (Actor) <----
 export type Polygon = Actor & {
 	SetLineWidth: (self: Polygon, width: number) -> (),
-	SetDrawMode: (self: Polygon, mode: string) -> (),
+	SetDrawMode: (self: Polygon, mode: string | "triangles" | "quads" | "quadstrip" | "strip" | "linestrip") -> (),
 	AddDrawSplit: (self: Polygon, index: number) -> (),
 	GetVertexColor: (self: Polygon, index: number) -> (number, number, number, number),
 	SetVertexNormal: (self: Polygon, index: number, x: number, y: number, z: number) -> (),
