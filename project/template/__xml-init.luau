@@ -62,9 +62,7 @@ return function(self: ActorFrame)
 			or function(s: string, pattern: string, init: number?)
 				local first, last = synn_env.string.find(s, pattern, init or 1)
 				if first then
-					return unpack({
-						synn_env.string.gmatch(synn_env.string.sub(s, first, last), pattern)(),
-					})
+					return unpack({ synn_env.string.gmatch(synn_env.string.sub(s, first, last), pattern)() })
 				end
 			end
 
