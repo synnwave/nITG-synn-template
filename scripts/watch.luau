@@ -3,11 +3,15 @@ local fs = require("@lune/fs")
 local stdio = require("@lune/stdio")
 local task = require("@lune/task")
 local process = require("@lune/process")
+local DateTime = require("@lune/datetime")
+
 process.spawn("clear", {}, { shell = true })
 print("Watching..")
 
 local finalResponse
+local madeResponseString = false
 local function makeResponse()
+	task.defer(function() madeResponseString = true end)
 	finalResponse = stdio.prompt("confirm", "Do you want to stop watching the project?")
 	if not finalResponse then
 		finalResponse = nil
@@ -47,5 +51,14 @@ while task.wait(0.2) do
 		end
 	end)
 
-	if canBuild then build() end
+	if canBuild then
+		stdio.write(stdio.style("bold") .. stdio.color("green"))
+		stdio.write(
+			`{if madeResponseString then "\n" else ""}Building @ {DateTime.now():formatLocalTime("%d/%m/%y %H:%M:%S %p")}`
+		)
+		stdio.write(stdio.style("reset") .. stdio.color("reset") .. " - ")
+		madeResponseString = false
+
+		build()
+	end
 end
