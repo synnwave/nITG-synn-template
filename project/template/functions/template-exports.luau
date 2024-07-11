@@ -978,6 +978,13 @@ do --> Runtime
 	end
 
 	--> Run Mods
+	local function indexClear(t)
+		for _ = 1, #t do
+			table.remove(t)
+		end
+		return t
+	end
+
 	local function runMods()
 		for playerId = 1, _G.PLAYER_COUNT do
 			local thisPlayer = _G.Players[playerId]
@@ -991,7 +998,7 @@ do --> Runtime
 				if thisBuffer[1] then
 					local compiledBuffer = table.concat(thisBuffer, ",")
 					_G.GAMESTATE:ApplyModifiers(compiledBuffer, playerId)
-					table.clear(thisBuffer)
+					indexClear(thisBuffer)
 				end
 			end
 		end
@@ -1010,7 +1017,7 @@ do --> Runtime
 		compileNodes()
 
 		for playerId = 1, _G.PLAYER_COUNT do
-			table.clear(modStringBuffer[playerId])
+			indexClear(modStringBuffer[playerId])
 		end
 
 		_G.templateReady = true
