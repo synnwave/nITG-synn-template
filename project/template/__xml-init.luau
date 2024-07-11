@@ -60,8 +60,12 @@ return function(self: ActorFrame)
 		synn_env.string.gmatch = string.gmatch or string.gfind
 		synn_env.string.match = string.match
 			or function(s: string, pattern: string, init: number?)
-				local first, last = string.find(s, pattern, init or 1)
-				if first then return unpack({ string.gmatch(string.sub(s, first, last), pattern)() }) end
+				local first, last = synn_env.string.find(s, pattern, init or 1)
+				if first then
+					return unpack({
+						synn_env.string.gmatch(synn_env.string.sub(s, first, last), pattern)(),
+					})
+				end
 			end
 
 		-- https://stackoverflow.com/a/43582076
