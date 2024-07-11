@@ -4,7 +4,7 @@
 --!nolint GlobalUsedAsLocal
 --!nolint FunctionUnused
 --!nolint ImplicitReturn
---# selene: allow(incorrect_standard_library_use, unused_variable, global_usage)
+--# selene: allow(incorrect_standard_library_use, unused_variable, global_usage, mixed_table)
 
 -- do stuff that i Do not like to do but we have to do...(modify globals, setfenv and stuff like that)
 -- thankfully we won't have to do anything when writing actual scripts, since the env is automatically applied by require()
@@ -42,11 +42,25 @@ return function(self: ActorFrame)
 	})
 
 	do --> Library backports (from lua 5.1 to 5.0)
+		--> global backports
+		function synn_env.select(index, ...: any)
+			local items = arg.n or #arg
+			if index == "#" then
+				return items
+			else
+				local result = {}
+				for i = index, items do
+					synn_env.table.insert(result, arg[i])
+				end
+				return unpack(result)
+			end
+		end
+
 		--> "string" library backports
 		synn_env.string.gmatch = string.gmatch or string.gfind
 		synn_env.string.match = string.match
 			or function(s: string, pattern: string, init: number?)
-				local match = string.gmatch(s, pattern)
+				local match = synn_env.string.gmatch(s, pattern)
 				local final
 				for _ = 1, (init or 1) do
 					final = match()
@@ -59,20 +73,20 @@ return function(self: ActorFrame)
 			local splitStart, length = 1, #text
 			return function()
 				if splitStart then
-					local sepStart, sepEnd = string.find(text, pattern, splitStart, plain)
+					local sepStart, sepEnd = synn_env.string.find(text, pattern, splitStart, plain)
 					local ret
 					if not sepStart then
-						ret = string.sub(text, splitStart)
+						ret = synn_env.string.sub(text, splitStart)
 						splitStart = nil
 					elseif sepEnd < sepStart then
-						ret = string.sub(text, splitStart, sepStart)
+						ret = synn_env.string.sub(text, splitStart, sepStart)
 						if sepStart < length then
 							splitStart = sepStart + 1
 						else
 							splitStart = nil
 						end
 					else
-						ret = sepStart > splitStart and string.sub(text, splitStart, sepStart - 1) or ""
+						ret = sepStart > splitStart and synn_env.string.sub(text, splitStart, sepStart - 1) or ""
 						splitStart = sepEnd + 1
 					end
 					return ret
@@ -90,13 +104,15 @@ return function(self: ActorFrame)
 			end
 
 		--> "math" library backports
-		synn_env.math.clamp = math.clamp or function(n, min, max) return math.min(math.max(n, min), max) end
+		synn_env.math.clamp = math.clamp or function(n, min, max) return synn_env.math.min(math.max(n, min), max) end
 		synn_env.math.huge = math.huge or 9e9
-		synn_env.math.round = math.round or function(x) return x > 0 and math.floor(x + 0.5) or math.ceil(x - 0.5) end
-		synn_env.math.modf = function(x)
-			local int = x >= 0 and math.floor(x) or math.ceil(x)
-			return int, x - int
-		end
+		synn_env.math.round = math.round
+			or function(x) return x > 0 and synn_env.math.floor(x + 0.5) or synn_env.math.ceil(x - 0.5) end
+		synn_env.math.modf = math.modf
+			or function(x)
+				local int = x >= 0 and synn_env.math.floor(x) or synn_env.math.ceil(x)
+				return int, x - int
+			end
 
 		--> "table" library backports
 		synn_env.table.clone = table.clone or cloneTable
@@ -106,7 +122,7 @@ return function(self: ActorFrame)
 					table.remove(t)
 				end
 				for i in pairs(t) do
-					t[i] = nil
+					if i ~= "n" then t[i] = nil end
 				end
 				return t
 			end
@@ -118,6 +134,18 @@ return function(self: ActorFrame)
 					end
 				end
 				return
+			end
+		synn_env.table.pack = table.pack
+			or function(...: any) return { n = synn_env.select("#", synn_env.unpack(...)), synn_env.unpack(...) } end
+		synn_env.table.unpack = table.unpack
+			or function(list, i, j)
+				i = i or 1
+				j = j or list.n or #list
+				if i > j then
+					return
+				else
+					return list[i], synn_env.table.unpack(list, i + 1, j)
+				end
 			end
 	end
 
