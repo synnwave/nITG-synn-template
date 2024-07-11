@@ -33,6 +33,12 @@ XeroOl and all [Mirin Template](https://github.com/XeroOl/notitg-mirin/) contrib
 lune run scripts/build
 ```
 
+Or alternatively, you can watch the project so that it builds it each time you save a file (NOTE: Experimental!):
+
+```bash
+lune run scripts/watch
+```
+
 ## Documentation
 
 There currently isn't any documentation on this template, but you can look at the [Mirin Template Documentaiton](https://xerool.github.io/notitg-mirin) since it's mostly similar.
