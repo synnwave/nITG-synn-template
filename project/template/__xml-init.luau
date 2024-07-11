@@ -92,10 +92,10 @@ return function(self: ActorFrame)
 		--> "math" library backports
 		synn_env.math.clamp = math.clamp or function(n, min, max) return math.min(math.max(n, min), max) end
 		synn_env.math.huge = math.huge or 9e9
-		synn_env.math.round = math.round or function(a) return a > 0 and math.floor(a + 0.5) or math.ceil(a - 0.5) end
-		synn_env.math.modf = function(a)
-			local rounded = synn_env.math.round(a)
-			return rounded, a - rounded
+		synn_env.math.round = math.round or function(x) return x > 0 and math.floor(x + 0.5) or math.ceil(x - 0.5) end
+		synn_env.math.modf = function(x)
+			local int = x >= 0 and math.floor(x) or math.ceil(x)
+			return int, x - int
 		end
 
 		--> "table" library backports
