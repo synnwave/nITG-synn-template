@@ -69,7 +69,7 @@ do --> "easeMod", "setMod", "resetMod"
 	function exports.easeMod(props: ease_props)
 		assureCaller("easeMod")
 
-		if not props.player then props.player = { 1, 2 } end
+		if not props.player then props.player = rawget(_G :: any, "affectedPlayers") or { 1, 2 } end -- i HATE metatables..
 
 		local thisEase = {
 			beat = props.beat,
