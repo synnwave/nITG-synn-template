@@ -110,6 +110,8 @@ do --> "easeMod", "setMod", "resetMod"
 		else
 			table.insert(internals.__eases, thisEase)
 		end
+
+		return exports.easeMod
 	end
 
 	--> setMod
@@ -119,6 +121,8 @@ do --> "easeMod", "setMod", "resetMod"
 		props.length = 0
 		props.easing = _E.instant
 		exports.easeMod(props)
+
+		return exports.setMod
 	end
 
 	--> resetMod
@@ -146,6 +150,8 @@ do --> "easeMod", "setMod", "resetMod"
 		end
 
 		exports.easeMod(props)
+
+		return exports.resetMod
 	end
 end
 
@@ -201,6 +207,8 @@ do --> "bindFunction", "bindToFrame", "easeFunction"
 		thisFunction.priority = (props.defer and -1 or 1) * (#internals.__functions + 1)
 		thisFunction.startTime = props.time and props.beat or thisSong:GetElapsedTimeFromBeat(thisFunction.beat)
 		table.insert(internals.__functions, thisFunction)
+
+		return exports.bindFunction
 	end
 
 	--> bindToFrame
@@ -254,6 +262,8 @@ do --> "bindFunction", "bindToFrame", "easeFunction"
 		end
 
 		table.insert(internals.__functions, thisFunction)
+
+		return exports.bindToFrame
 	end
 
 	--> easeFunction
@@ -302,6 +312,8 @@ do --> "bindFunction", "bindToFrame", "easeFunction"
 		end
 
 		exports.bindToFrame(thisFunction, true)
+
+		return exports.easeFunction
 	end
 end
 
@@ -329,6 +341,8 @@ do --> "setAlias", "setModDefault", "setAux", "makeNode", "defineMod"
 		elseif type(a) == "number" and type(b) == "string" then
 			internals.__defaultMods[string.lower(b)] = a
 		end
+
+		return exports.setModDefault
 	end
 
 	--> setAux
@@ -343,6 +357,8 @@ do --> "setAlias", "setModDefault", "setAux", "makeNode", "defineMod"
 				exports.setAux(thisAux)
 			end
 		end
+
+		return exports.setAux
 	end
 
 	--> makeNode
@@ -378,6 +394,8 @@ do --> "setAlias", "setModDefault", "setAux", "makeNode", "defineMod"
 		} :: INTERNAL_makeNode
 
 		table.insert(internals.__nodes, thisNode)
+
+		return exports.makeNode
 	end
 
 	--> defineMod
@@ -406,6 +424,8 @@ do --> "setAlias", "setModDefault", "setAux", "makeNode", "defineMod"
 		end
 
 		exports.makeNode(thisMod)
+
+		return exports.defineMod
 	end
 end
 
@@ -485,6 +505,8 @@ do --> Setup Utilities
 		proxy:xy(_G.SCREEN_CENTER_X * (playerID - 0.5), _G.SCREEN_CENTER_Y)
 		target:hidden(1)
 		target:sleep(math.huge)
+
+		return exports.setupJudgeProxy
 	end
 
 	function exports.backToSongWheel(message: string?)
@@ -570,30 +592,32 @@ do --> Runtime
 		touchedMods[playerId] = {}
 	end
 
-	local function touchMod(mod: string, playerId: number?)
+	function exports.touchMod(mod: string, playerId: number?)
 		if playerId then
 			modValues[playerId][mod] = modValues[playerId][mod]
 			return
 		end
 
 		for _playerId = 1, _G.PLAYER_COUNT do
-			touchMod(mod, _playerId)
+			exports.touchMod(mod, _playerId)
 		end
+
+		return exports.touchMod
 	end
 	function exports.touchAllMods(playerId: number?)
 		for mod in pairs(internals.__defaultMods) do
-			touchMod(mod)
+			exports.touchMod(mod)
 		end
 
 		if playerId then
 			for mod in pairs(modTargets[playerId]) do
-				touchMod(mod, playerId)
+				exports.touchMod(mod, playerId)
 			end
 			return
 		end
 		for _playerId = 1, _G.PLAYER_COUNT do
 			for mod in pairs(modTargets[_playerId]) do
-				touchMod(mod, _playerId)
+				exports.touchMod(mod, _playerId)
 			end
 		end
 	end
@@ -860,7 +884,7 @@ do --> Runtime
 				activeEasesIndex += 1
 			else
 				for _, mod in ipairs(ease.mod) do
-					touchMod(mod.mod)
+					exports.touchMod(mod.mod)
 				end
 
 				if activeEasesIndex ~= #activeEases then
@@ -909,7 +933,7 @@ do --> Runtime
 				if func.mods then
 					for playerId = 1, playerCount do
 						for mod in pairs(func.mods[playerId]) do
-							touchMod(mod, playerId)
+							exports.touchMod(mod, playerId)
 						end
 					end
 				end
@@ -949,7 +973,7 @@ do --> Runtime
 				if not lastSeenAwake[playerId] then
 					lastSeenAwake[playerId] = true
 					for mod in pairs(touchedMods[playerId]) do
-						touchMod(mod, playerId)
+						exports.touchMod(mod, playerId)
 						touchedMods[playerId][mod] = nil
 					end
 				end
