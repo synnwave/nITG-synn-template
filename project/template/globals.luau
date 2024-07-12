@@ -24,7 +24,7 @@ local globals = {
 	templateReady = false,
 	Actors = {} :: XMLTypes.actorTable,
 
-	affectedPlayers = { 1, 2 },
+	affectedPlayers = { 1, 2 } :: (number | { number })?,
 
 	--> GLOBAL Functions
 	DayOfYear = DayOfYear :: T.DayOfYear,
