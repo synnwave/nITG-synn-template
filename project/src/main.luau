@@ -18,7 +18,7 @@ do --> Setup
 	--> Setup Judgement & Combo Proxies
 	for playerId = 1, 2 do
 		local thisPlayer = _P[playerId]
-		_F.setupJudgeProxy(_A.PJ[playerId], thisPlayer:GetChild("Judgment"), playerId) -- WHY IS THIS MISSPELLED
+		_F.setupJudgeProxy(_A.PJ[playerId], thisPlayer:GetChild("Judgment"), playerId)
 		_F.setupJudgeProxy(_A.PC[playerId], thisPlayer:GetChild("Combo"), playerId)
 	end
 end
