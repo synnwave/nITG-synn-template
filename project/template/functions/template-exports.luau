@@ -321,7 +321,8 @@ do --> "setAlias", "setModDefault", "setAux", "makeNode", "defineMod"
 	--> setAlias
 	internals.__aliases = {}
 	function exports.setAlias(old: Types.mods, new: string)
-		internals.__aliases[string.lower(old)] = string.lower(new) --
+		internals.__aliases[string.lower(old)] = string.lower(new)
+		return exports.setAlias
 	end
 
 	--> setDefault
@@ -331,18 +332,31 @@ do --> "setAlias", "setModDefault", "setAux", "makeNode", "defineMod"
 			return 0
 		end,
 	})
-	function exports.setModDefault(a: number | { { percent: number, mod: Types.mods } }, b: string?)
-		assureCaller("setModDefault")
+	do --> Hell. beware
+		type setModDefault_schema =
+			((percent: number, mod: Types.mods) -> setModDefault_schema)
+			& (({ percent: number, mod: Types.mods }) -> setModDefault_schema)
+			& (({ { percent: number, mod: Types.mods } }) -> setModDefault_schema)
+		local function __setModDefault(...: any)
+			assureCaller("setModDefault")
+			local arg1: any, arg2: any = unpack(... :: any)
 
-		if type(a) == "table" then
-			for _, v in ipairs(a) do
-				internals.__defaultMods[string.lower(v.mod)] = v.percent
+			if type(arg1) == "table" then
+				if type(arg1.mod) == "string" and type(arg1.percent) == "number" then
+					internals.__defaultMods[string.lower(arg1.mod)] = arg1.percent
+				else
+					for _, v in ipairs(arg1) do
+						internals.__defaultMods[string.lower(v.mod)] = v.percent
+					end
+				end
+			elseif type(arg1) == "number" and type(arg2) == "string" then
+				internals.__defaultMods[string.lower(arg2)] = arg1
 			end
-		elseif type(a) == "number" and type(b) == "string" then
-			internals.__defaultMods[string.lower(b)] = a
+
+			return __setModDefault :: setModDefault_schema
 		end
 
-		return exports.setModDefault
+		exports.setModDefault = __setModDefault :: setModDefault_schema
 	end
 
 	--> setAux
