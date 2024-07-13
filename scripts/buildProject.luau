@@ -25,14 +25,17 @@ return function()
 	if fs.isFile(outputDir) then fs.removeFile(outputDir) end
 
 	--> refresh types & copy files
-	require("refresh")
+	require("refreshTypes")()
 	fs.copy(projectDir, outputDir)
 
 	--> before processing, fix variadics (replace "..." to "arg" because of lua 5.0, unless it has a colon in front of it.
 	-->                                   we do this before processing because colons/types get removed after processing)
 	dirFileIterator(outputDir, function(_, file, thisFile)
 		if file:sub(-FILE_ENDING.from:len()) ~= FILE_ENDING.from then return end -- make sure we're editing a .luau file
-		fs.writeFile(thisFile, (fs.readFile(thisFile):gsub("%.%.%.:?", function(m) return if m:sub(-1) == ":" then m else "arg" end)))
+		fs.writeFile(
+			thisFile,
+			(fs.readFile(thisFile):gsub("%.%.%.:?", function(m) return if m:sub(-1) == ":" then m else "arg" end))
+		)
 	end)
 
 	--> process!
