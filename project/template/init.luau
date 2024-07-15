@@ -6,6 +6,8 @@ local XMLTypes = require("types/XMLTypeDefs")
 
 local easing = require("functions/easings")
 local template = require("functions/template-exports")
+local mergeTable = require("functions/mergeTable")
+local declareActor = require("functions/declareActors")
 
 local _T = {
 	_initialized = false,
@@ -13,7 +15,7 @@ local _T = {
 
 	Actors = {} :: XMLTypes.actorTable,
 	Players = {} :: { Types.Player },
-	Functions = template.exports,
+	Functions = mergeTable(template.exports, { CreateActor = declareActor.CreateActor }),
 	Easings = easing,
 	Globals = _G,
 }
@@ -21,14 +23,16 @@ local _T = {
 function _T:Init(initActor: Types.Actor, onReady: () -> ())
 	if _T._initialized then return end
 	_T._initialized = true
-	_G.Players = _T.Players
 
 	initActor:effectclock("music")
 	initActor:addcommand("On", function()
 		--> Get Actors
-		local _, actorTable = require("functions/scanActors").scan()
-		_T.Actors = actorTable
-		_G.Actors = actorTable
+		if not _G.Actors then _G.Actors = {} :: any end
+		local actorTable = require("functions/scanActors").scan()
+		for name, actor in actorTable do
+			_T.Actors[name] = actor -- we need to keep these tables as a reference
+			_G.Actors[name] = actor
+		end
 
 		initActor:queuecommand("Ready")
 	end)
@@ -37,8 +41,7 @@ function _T:Init(initActor: Types.Actor, onReady: () -> ())
 		local topScreen = _G.SCREENMAN:GetTopScreen()
 
 		--> Hide screen actors
-		local themeActors = { "Overlay", "Underlay", "ScoreP1", "ScoreP2", "LifeP1", "LifeP2" }
-		for _, elementName in ipairs(themeActors) do
+		for _, elementName in ipairs { "Overlay", "Underlay", "ScoreP1", "ScoreP2", "LifeP1", "LifeP2" } do
 			local element = topScreen:GetChild(elementName)
 			if element then element:hidden(1) end
 		end
@@ -46,11 +49,15 @@ function _T:Init(initActor: Types.Actor, onReady: () -> ())
 		--> Get Players
 		for playerID = 1, _G.PLAYER_COUNT do
 			local playerElement = topScreen:GetChild(`PlayerP{playerID}`) :: Types.Player?
-			if playerElement then _T.Players[playerID] = playerElement end
+			if playerElement then
+				_T.Players[playerID] = playerElement
+				_G.Players[playerID] = playerElement
+			end
 		end
 
 		_G.foreground:hidden(0)
 		_G.foreground:playcommand("Load")
+		_G.isLoadingUserMods = true
 		onReady()
 		template.internals.__onReady()
 		initActor:luaeffect("Update")

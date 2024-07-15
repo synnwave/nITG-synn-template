@@ -14,8 +14,17 @@ local exports = {}
 local internals = {}
 
 local thisSong = _G.GAMESTATE:GetCurrentSong()
-local function assureCaller(name: string)
-	if _G.templateReady then error(`cannot call {name} after the song has loaded`) end
+local function assureCaller(
+	name: string,
+	templateReadyCheckDisabled: boolean?,
+	isLoadingUserModsCheckDisabled: boolean?
+)
+	if (not templateReadyCheckDisabled) and _G.templateReady then
+		error(`cannot call {name} after the song has loaded`)
+	end
+	if (not isLoadingUserModsCheckDisabled) and not _G.isLoadingUserMods then
+		error(`cannot call {name} because the template hasn't fully initialized yet`)
+	end
 end
 
 local function deepCopy<T>(tbl: T): T
@@ -338,7 +347,7 @@ do --> "setAlias", "setModDefault", "setAux", "makeNode", "defineMod"
 			& (({ percent: number, mod: Types.mods }) -> setModDefault_schema)
 			& (({ { percent: number, mod: Types.mods } }) -> setModDefault_schema)
 		local function __setModDefault(...: any)
-			assureCaller("setModDefault")
+			assureCaller("setModDefault", false, true)
 			local arg1: any, arg2: any = unpack(... :: any)
 
 			if type(arg1) == "table" then
@@ -362,7 +371,7 @@ do --> "setAlias", "setModDefault", "setAux", "makeNode", "defineMod"
 	--> setAux
 	internals.__auxes = {}
 	function exports.setAux(toAux: string | { string })
-		assureCaller("setAux")
+		assureCaller("setAux", false, true)
 
 		if type(toAux) == "string" then
 			internals.__auxes[toAux] = true
@@ -398,7 +407,7 @@ do --> "setAlias", "setModDefault", "setAux", "makeNode", "defineMod"
 		realMethod: ((number) -> ...any)?,
 	}
 	function exports.makeNode(props: makeNode_props)
-		assureCaller("makeNode")
+		assureCaller("makeNode", false, true)
 
 		local thisNode = {
 			inputs = (type(props.inputMod) == "string" and { props.inputMod } or props.inputMod),
@@ -421,7 +430,7 @@ do --> "setAlias", "setModDefault", "setAux", "makeNode", "defineMod"
 		defer: boolean?,
 	}
 	function exports.defineMod(props: defineMod_props)
-		assureCaller("defineMod")
+		assureCaller("defineMod", false, true)
 
 		local thisMod: makeNode_props = {
 			inputMod = props.modName,

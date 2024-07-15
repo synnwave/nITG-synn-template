@@ -8,6 +8,8 @@
 local T = require("types/TypeDefs")
 local XMLTypes = require("types/XMLTypeDefs")
 
+local configuration = require("../src/configuration")
+
 local globals = {
 	foreground = foreground :: T.ActorFrame,
 	ROOT = ROOT :: string,
@@ -20,11 +22,14 @@ local globals = {
 
 	--> Shared Template Variables
 	Players = {} :: { T.Player },
-	PLAYER_COUNT = 8,
-	templateReady = false,
 	Actors = {} :: XMLTypes.actorTable,
+	templateReady = false,
+	isLoadingUserMods = false,
 
-	affectedPlayers = { 1, 2 } :: (number | { number })?,
+	--> Configuration
+	PLAYER_COUNT = configuration.MAX_PLAYERS or 8,
+	DECLARATIVE_LAYOUT_ENABLED = configuration.DECLARATIVE_LAYOUT_ENABLED,
+	affectedPlayers = configuration.affectedPlayers or { 1, 2 } :: (number | { number })?,
 
 	--> GLOBAL Functions
 	DayOfYear = DayOfYear :: T.DayOfYear,
