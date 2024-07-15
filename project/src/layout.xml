@@ -5,4 +5,10 @@
 	<Layer Type = "ActorProxy" Name = "PJ[2]" />
 	<Layer Type = "ActorProxy" Name = "PP[1]" />
 	<Layer Type = "ActorProxy" Name = "PP[2]" />
+
+	
+	<!-- Load Declarative Actors (feel free to remove if you're not using declarative layout) -->
+	<!-- see configuration.luau for more info! -->
+	<Layer File = "../template/functions/declarativeActors.xml" Condition = "synn_env.definedGlobals.DECLARATIVE_LAYOUT_ENABLED" />
+	
 </children></Layer>

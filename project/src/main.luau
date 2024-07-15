@@ -2,6 +2,7 @@
 
 local _T = require("../template")
 local _G, _P, _F, _A, _E = _T.Globals, _T.Players, _T.Functions, _T.Actors, _T.Easings
+
 do --> Setup
 	if (not _P[1]) or not _P[2] then
 		_F.backToSongWheel("Two Player Mode Required")
@@ -32,4 +33,5 @@ end
 
 -- and its yours
 
-_F.setModDefault { { percent = 6, mod = "xmod" } }
+-- Mod example:
+_F.setModDefault { percent = 3, mod = "xmod" } { percent = 100, mod = "confusion" }
