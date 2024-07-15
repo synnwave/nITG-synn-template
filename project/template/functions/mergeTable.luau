@@ -6,7 +6,7 @@ local function mergeTable(into: any, from: any?, ...: any): any
 		into[i] = v
 	end
 
-	return mergeTable(into, unpack(...))
+	return mergeTable(into, ...)
 end
 
 type Merge_schema =

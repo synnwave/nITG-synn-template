@@ -28,14 +28,18 @@ return function()
 	require("refreshTypes")()
 	fs.copy(projectDir, outputDir)
 
-	--> before processing, fix variadics (replace "..." to "arg" because of lua 5.0, unless it has a colon in front of it.
+	--> before processing, fix variadics (replace "..." to "unpack(arg)" because of lua 5.0, unless it has a colon in front of it.
 	-->                                   we do this before processing because colons/types get removed after processing)
+	local characterWhitelist = { "", " ", "}", ")", "\r", "\n", "\t" }
 	dirFileIterator(outputDir, function(_, file, thisFile)
 		if file:sub(-FILE_ENDING.from:len()) ~= FILE_ENDING.from then return end -- make sure we're editing a .luau file
-		fs.writeFile(
-			thisFile,
-			(fs.readFile(thisFile):gsub("%.%.%.:?", function(m) return if m:sub(-1) == ":" then m else "arg" end))
-		)
+		local fileContents = fs.readFile(thisFile):gsub("%.%.%..?", function(match)
+			local lastCharacter = match:sub(-1)
+			if lastCharacter == "." then lastCharacter = "" end -- in the case where it only captures "...", which will probably never happen but i want to be safe ok...
+			if table.find(characterWhitelist, lastCharacter) then return `unpack(arg){lastCharacter}` end
+			return match
+		end)
+		fs.writeFile(thisFile, fileContents)
 	end)
 
 	--> process!

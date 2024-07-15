@@ -21,6 +21,8 @@ Note: this template is not intended to be used by beginners or people who are no
 
 - Fixes Lua 5.0 for loop bugs
 
+- Lua 5.1 Like variadics
+
 - XML Actors auto-completion
 
 - Auto-completion & type-checking for all of [nITG's Lua API](https://craftedcart.gitlab.io/notitg_docs/lua_api/index.html)

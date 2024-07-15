@@ -5,14 +5,7 @@ local luau = require("@lune/luau")
 
 local utils = {}
 
-local function mergeTable(into: any, from: any?, ...: any): any
-	if from == nil then return into end
-	for i, v in from do
-		into[i] = v
-	end
-
-	return mergeTable(into, ...)
-end
+local mergeTable = require("../../project/template/functions/mergeTable")
 
 local template, game
 local cache

@@ -209,7 +209,7 @@ do --> "bindFunction", "bindToFrame", "easeFunction"
 			local oldMethod = thisFunction.method
 			local time = thisFunction.beat + thisPersist
 			thisFunction.method = function(beat: number, ...: any)
-				if beat < time then oldMethod(beat, unpack(... :: any)) end
+				if beat < time then oldMethod(beat, ...) end
 			end
 		end
 
@@ -348,7 +348,7 @@ do --> "setAlias", "setModDefault", "setAux", "makeNode", "defineMod"
 			& (({ { percent: number, mod: Types.mods } }) -> setModDefault_schema)
 		local function __setModDefault(...: any)
 			assureCaller("setModDefault", false, true)
-			local arg1: any, arg2: any = unpack(... :: any)
+			local arg1: any, arg2: any = ...
 
 			if type(arg1) == "table" then
 				if type(arg1.mod) == "string" and type(arg1.percent) == "number" then

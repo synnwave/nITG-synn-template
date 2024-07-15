@@ -133,8 +133,7 @@ return function(self: ActorFrame)
 				end
 				return
 			end
-		synn_env.table.pack = table.pack
-			or function(...: any) return { n = synn_env.select("#", synn_env.unpack(...)), synn_env.unpack(...) } end
+		synn_env.table.pack = table.pack or function(...: any) return { n = synn_env.select("#", ...), ... } end
 		synn_env.table.unpack = table.unpack
 			or function(list, i, j)
 				i = i or 1
@@ -192,13 +191,13 @@ return function(self: ActorFrame)
 			local thisRequire = cache[altPath] or cache[path]
 			if not thisRequire then
 				local usedPath = path
-				local loaded = loadfile(path)
+				local loaded, loadError = loadfile(path)
 				if not loaded then -- try alternative path
 					usedPath = altPath
-					loaded = loadfile(usedPath)
+					loaded, loadError = loadfile(usedPath)
 				end
 
-				if not loaded then error(`[REQUIRE]: Could not find "{oldPath}"`, 2) end
+				if not loaded then error(`[REQUIRE]: Could not require "{oldPath}", {loadError}`, 2) end
 				print(`[REQUIRE]: {path}`)
 				thisRequire = synn_env(loaded)()
 				cache[path] = thisRequire
