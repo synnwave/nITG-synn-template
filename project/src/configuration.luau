@@ -2,7 +2,7 @@ return {
 
 	MAX_PLAYERS = 8, -- default: 8
 
-	DECLARATIVE_LAYOUT_ENABLED = false,
-	-- Experimental feature that allows you to declare actors in lua.
+	CREATE_ACTORS_IN_LUA = false,
+	-- Experimental feature that allows you to create actors in lua.
 	-- Please see this before enabling! https://github.com/synnwave/nITG-synn-template/pull/1
 }

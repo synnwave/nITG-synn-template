@@ -7,7 +7,7 @@ local XMLTypes = require("types/XMLTypeDefs")
 local easing = require("functions/easings")
 local template = require("functions/template-exports")
 local mergeTable = require("functions/mergeTable")
-local declareActor = require("functions/declareActors")
+local createActors = require("functions/createActors")
 
 local _T = {
 	_initialized = false,
@@ -15,7 +15,7 @@ local _T = {
 
 	Actors = {} :: XMLTypes.actorTable,
 	Players = {} :: { Types.Player },
-	Functions = mergeTable(template.exports, { createActor = declareActor.createActor }),
+	Functions = mergeTable(template.exports, { createActor = createActors.createActor }),
 	Easings = easing,
 	Globals = _G,
 }

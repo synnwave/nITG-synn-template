@@ -12,7 +12,7 @@ Note: this template is not intended to be used by beginners or people who are no
 
 @XeroOl and all [Mirin Template](https://github.com/XeroOl/notitg-mirin/) contributors. This template is based on it.
 
-@ArcticFqx for [script that allows you to create actors by script](https://github.com/ArcticFqx/nitg-theme/blob/master/Lua/geno.lua). This template uses a heavily modified version of it for the [declarative layout feature](https://github.com/synnwave/nITG-synn-template/pull/1).
+@ArcticFqx for [script that allows you to create actors by script](https://github.com/ArcticFqx/nitg-theme/blob/master/Lua/geno.lua). This template uses a heavily modified version of it for the [Make Actors in Lua feature](https://github.com/synnwave/nITG-synn-template/pull/1).
 
 ## Extra Features
 

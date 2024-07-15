@@ -43,11 +43,9 @@ local function removeChildFromTable(child)
 end
 
 local function _constructor(class: string)
-	if _G.templateReady then error("Cannot call CreateActor after the song has loaded") end
-	if not _G.DECLARATIVE_LAYOUT_ENABLED then
-		error("Cannot call CreateActor because declarative layout is disabled")
-	end
-	if _G.isLoadingUserMods then error("Cannot call CreateActor because the template has already initialized") end
+	if _G.templateReady then error("Cannot call createActor after the song has loaded") end
+	if not _G.CREATE_ACTORS_IN_LUA then error("Cannot call createActor because CREATE_ACTORS_IN_LUA is disabled") end
+	if _G.isLoadingUserMods then error("Cannot call createActor because the template has already initialized") end
 
 	return function<T>(props: constructorProps<T>)
 		local thisClass = {} :: class<any>
@@ -57,12 +55,15 @@ local function _constructor(class: string)
 			if i == "File" or i == "Texture" then thisClass[i] = _G.resolveLuaPath(v, 3) end
 		end
 
-		if class == "ActorFrame" then thisClass.Children = thisClass.Children or {} end
-		if thisClass.Children then
+		if thisClass.Children and class == "ActorFrame" then
 			for _, child in pairs(thisClass.Children) do
 				removeChildFromTable(child)
 			end
+		else
+			error(`Class "{class}" cannot have any children since it's not an ActorFrame`)
 		end
+		if class == "ActorFrame" then thisClass.Children = thisClass.Children or {} end
+
 		function thisClass:appendChild<C>(child: any)
 			if class ~= "ActorFrame" or not thisClass.Children then
 				error(`Cannot append child "{child.className}" to class of type {class}`)
@@ -147,7 +148,7 @@ function exports.__getType()
 	return thisClass.className
 end
 
-local xmlPath = "declarativeActors.xml"
+local xmlPath = "createLuaActors.xml"
 function exports.__getFile(): string?
 	local thisLayer: layer_schema = currentStack:getTop()
 	if thisLayer.currentDepth < thisLayer.depth then

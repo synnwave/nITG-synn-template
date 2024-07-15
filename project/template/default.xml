@@ -8,7 +8,7 @@
 		synn_env()
 		foreground = self
         synn_env.definedGlobals = require('globals')
-		synn_env.declareActors = require('functions/declareActors')
+		synn_env.createActors = require('functions/createActors')
     end"
 >
 	<children>
@@ -17,7 +17,7 @@
 			local template = require('init')
 			template:Init(self, function()
 				--> this function will run once the template is ready. it will require the user's scripts
-				if template.Globals.DECLARATIVE_LAYOUT_ENABLED and mainScriptDidNotReturn then 
+				if template.Globals.CREATE_ACTORS_IN_LUA and mainScriptDidNotReturn then 
 					template.Functions.backToSongWheel('main.lua\u did not return a value.')
 					return
 				end
@@ -34,8 +34,8 @@
 		<!-- Load the User's actors -->
 		<Layer File = "../src/layout.xml"
 			Condition = "synn_env(function(self)
-				--> code below only runs if declarative layout is enabled !!
-				if definedGlobals.DECLARATIVE_LAYOUT_ENABLED then 
+				--> code below only runs if CREATE_ACTORS_IN_LUA is enabled !!
+				if definedGlobals.CREATE_ACTORS_IN_LUA then 
 					local mainScript = require(outputFolder .. '/src/main')
 					if not mainScript then 
 						synn_env.mainScriptDidNotReturn = true  
@@ -46,7 +46,7 @@
 						mainScript.initActors(self)
 					end
 
-					declareActors.__init()
+					createActors.__init()
 				end
 	
 				return true

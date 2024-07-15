@@ -38,13 +38,13 @@ return function()
 		iterateXML(handler.root)
 	end
 
-	do --> Capture Declarative Actors
+	do --> Capture Lua Actors
 		local success, configuration = pcall(function() return require("../project/src/configuration") :: any end)
-		if (success and configuration) and configuration.DECLARATIVE_LAYOUT_ENABLED then
+		if (success and configuration) and configuration.CREATE_ACTORS_IN_LUA then
 			pcall(function()
 				local utils = require("mock/utilities")
 				utils.beginMock(true)
-				utils.cache["project/template/functions/declareActors.luau"] = {
+				utils.cache["project/template/functions/createActors.luau"] = {
 					CreateActor = function(thisType: string)
 						thisType = thisType or "Actor"
 						if thisType == "" then thisType = "Actor" end
