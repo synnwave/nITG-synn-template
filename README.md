@@ -2,7 +2,7 @@
 
 This template is a complete rewrite of the [Mirin Template](https://github.com/XeroOl/notitg-mirin/), in [Luau](https://luau-lang.org/).
 
-The goal of this template is to have auto-completion & strict typing, and to avoid global variables as much as possible when writing scripts.
+The goal of this template is to have auto-completion & strict typing and to avoid global variables as much as possible when writing scripts.
 
 ## DISCLAIMER
 
@@ -10,7 +10,7 @@ Note: this template is not intended to be used by beginners or people who are no
 
 ## Credits
 
-@XeroOl and all [Mirin Template](https://github.com/XeroOl/notitg-mirin/) contributors. This template is based off of it.
+@XeroOl and all [Mirin Template](https://github.com/XeroOl/notitg-mirin/) contributors. This template is based on it.
 
 @ArcticFqx for [script that allows you to create actors by script](https://github.com/ArcticFqx/nitg-theme/blob/master/Lua/geno.lua). This template uses a heavily modified version of it for the [declarative layout feature](https://github.com/synnwave/nITG-synn-template/pull/1).
 
@@ -31,7 +31,7 @@ Note: this template is not intended to be used by beginners or people who are no
 
 1. Install [Aftman](https://github.com/lpghatguy/aftman) and run `aftman install`.
 
-2. Run the following every time before you playtest your modfile:
+2. Run the following every time before you playtest your mod file:
 
 ```bash
 lune run scripts/build
