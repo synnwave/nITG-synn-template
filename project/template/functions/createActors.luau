@@ -18,9 +18,9 @@ type class<T> = {
 type constructorProps<T> = {
 	Name: string?,
 	InitCommand: ((self: T) -> ())?,
-	Condition: (() -> boolean)?,
 	File: string?,
 	Texture: string?,
+	Children: { class<any> }?,
 	[string]: any,
 }
 type innerConstructor<T> = (props: constructorProps<T>) -> class<T>
@@ -50,29 +50,32 @@ local function _constructor(class: string)
 	return function<T>(props: constructorProps<T>)
 		local thisClass = {} :: class<any>
 		thisClass.className = class
-		for i, v in props do
-			if i ~= "className" then thisClass[i] = v end
-			if i == "File" or i == "Texture" then thisClass[i] = _G.resolveLuaPath(v, 3) end
-		end
-
-		if thisClass.Children and class == "ActorFrame" then
-			for _, child in pairs(thisClass.Children) do
-				removeChildFromTable(child)
-			end
-		else
-			error(`Class "{class}" cannot have any children since it's not an ActorFrame`)
-		end
-		if class == "ActorFrame" then thisClass.Children = thisClass.Children or {} end
-
 		function thisClass:appendChild<C>(child: any)
 			if class ~= "ActorFrame" or not thisClass.Children then
-				error(`Cannot append child "{child.className}" to class of type {class}`)
+				error(`Cannot append child "{child.className}" to class of type "{class}"`)
 			end
 
 			removeChildFromTable(child)
 			table.insert(thisClass.Children, child)
 		end
 		function thisClass:get() return assert(thisClass.actor, "actor doesn't exist yet") end
+
+		if props.Children then
+			if class == "ActorFrame" then
+				if not thisClass.Children then thisClass.Children = {} end
+				for _, child in ipairs(props.Children) do
+					thisClass:appendChild(child)
+				end
+			else
+				error(`Class "{class}" cannot have any children since it's not an ActorFrame`)
+			end
+		end
+		if class == "ActorFrame" then thisClass.Children = thisClass.Children or {} end
+
+		for i, v in pairs(props) do
+			if i ~= "className" then thisClass[i] = v end
+			if i == "File" or i == "Texture" then thisClass[i] = _G.resolveLuaPath(v, 3) end
+		end
 
 		table.insert(exports.__classes, thisClass)
 		return thisClass
