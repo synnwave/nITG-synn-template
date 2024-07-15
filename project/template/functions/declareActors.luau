@@ -70,7 +70,7 @@ local function _constructor(class: string)
 	end
 end
 
-exports.CreateActor = (_constructor :: any) :: constructor
+exports.createActor = (_constructor :: any) :: constructor
 
 -- time for internal stuff --
 -- credits to: https://github.com/ArcticFqx/nitg-theme/blob/master/Lua/geno.lua !

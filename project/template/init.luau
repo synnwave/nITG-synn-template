@@ -15,7 +15,7 @@ local _T = {
 
 	Actors = {} :: XMLTypes.actorTable,
 	Players = {} :: { Types.Player },
-	Functions = mergeTable(template.exports, { CreateActor = declareActor.CreateActor }),
+	Functions = mergeTable(template.exports, { createActor = declareActor.createActor }),
 	Easings = easing,
 	Globals = _G,
 }
