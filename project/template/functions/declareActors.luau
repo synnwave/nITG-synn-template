@@ -9,7 +9,7 @@ exports.__classes = {} :: { class<any> }
 type class<T> = {
 	actor: T,
 	className: string,
-	children: { any }?,
+	Children: { any }?,
 	[string]: any,
 
 	get: (self: class<T>) -> T,
@@ -37,6 +37,11 @@ type constructor =
 	& ((class: "Sprite") -> innerConstructor<Types.Sprite>)
 	& ((class: "Quad") -> innerConstructor<Types.Quad>)
 
+local function removeChildFromTable(child)
+	local childIndex = table.find(exports.__classes, child)
+	if childIndex then table.remove(exports.__classes, childIndex) end
+end
+
 local function _constructor(class: string)
 	if _G.templateReady then error("Cannot call CreateActor after the song has loaded") end
 	if not _G.DECLARATIVE_LAYOUT_ENABLED then
@@ -52,16 +57,19 @@ local function _constructor(class: string)
 			if i == "File" or i == "Texture" then thisClass[i] = _G.resolveLuaPath(v, 3) end
 		end
 
-		if class == "ActorFrame" then thisClass.children = thisClass.children or {} end
+		if class == "ActorFrame" then thisClass.Children = thisClass.Children or {} end
+		if thisClass.Children then
+			for _, child in pairs(thisClass.Children) do
+				removeChildFromTable(child)
+			end
+		end
 		function thisClass:appendChild<C>(child: any)
-			if class ~= "ActorFrame" or not thisClass.children then
-				error(`Cannot append child to class of type {class}`)
+			if class ~= "ActorFrame" or not thisClass.Children then
+				error(`Cannot append child "{child.className}" to class of type {class}`)
 			end
 
-			local childIndex = table.find(exports.__classes, child)
-			if childIndex then table.remove(exports.__classes, childIndex) end
-
-			table.insert(thisClass.children, child)
+			removeChildFromTable(child)
+			table.insert(thisClass.Children, child)
 		end
 		function thisClass:get() return assert(thisClass.actor, "actor doesn't exist yet") end
 
@@ -100,11 +108,11 @@ local stackMetatable = {
 stackMetatable.__index = stackMetatable
 function stackMetatable:getTop() return self[#self] end
 function stackMetatable:newLayer(classes: any)
-	if not classes.children then return end
+	if not classes.Children then return end
 	self:push({
-		classes = classes.children,
-		depth = getDepth(classes.children),
-		width = #classes.children,
+		classes = classes.Children,
+		depth = getDepth(classes.Children),
+		width = #classes.Children,
 		currentDepth = 1,
 		index = 0,
 		nodes = {},
@@ -135,7 +143,7 @@ function exports.__getType()
 
 	thisLayer.index += 1
 	local thisClass = thisLayer.classes[thisLayer.index]
-	if thisClass.className == "ActorFrame" and (thisClass.children and #thisClass.children > 0) then return end
+	if thisClass.className == "ActorFrame" and (thisClass.Children and #thisClass.Children > 0) then return end
 	return thisClass.className
 end
 
@@ -148,7 +156,7 @@ function exports.__getFile(): string?
 	end
 
 	local thisClass = thisLayer.classes[thisLayer.index]
-	if thisClass.className == "ActorFrame" and (thisClass.children and #thisClass.children > 0) then
+	if thisClass.className == "ActorFrame" and (thisClass.Children and #thisClass.Children > 0) then
 		currentStack:newLayer(thisClass)
 		return xmlPath
 	end
@@ -196,7 +204,7 @@ end
 
 function exports.__init()
 	currentStack = setmetatable({}, stackMetatable)
-	currentStack:newLayer({ children = exports.__classes })
+	currentStack:newLayer({ Children = exports.__classes })
 end
 
 return exports
