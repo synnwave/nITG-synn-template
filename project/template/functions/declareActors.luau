@@ -39,10 +39,10 @@ type constructor =
 
 local function _constructor(class: string)
 	if _G.templateReady then error("Cannot call CreateActor after the song has loaded") end
-	if _G.isLoadingUserMods then error("Cannot call CreateActor because the template has already initialized") end
 	if not _G.DECLARATIVE_LAYOUT_ENABLED then
 		error("Cannot call CreateActor because declarative layout is disabled")
 	end
+	if _G.isLoadingUserMods then error("Cannot call CreateActor because the template has already initialized") end
 
 	return function<T>(props: constructorProps<T>)
 		local thisClass = {} :: class<any>
