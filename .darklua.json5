@@ -1,5 +1,5 @@
 {
-  "rules": [
+  rules: [
     "remove_types",
     "remove_interpolated_string",
     "remove_compound_assignment",
@@ -15,6 +15,6 @@
     "convert_index_to_field",
     "rename_variables",
     "remove_function_call_parens",
-    "compute_expression"
-  ]
+    "compute_expression",
+  ],
 }

@@ -1,0 +1,19 @@
+<ActorFrame>
+    <children>
+        <!-- Dude .... (feel free to copy & paste this a couple more times if needed) -->
+        <Layer Condition="synn_env.createActors.__condition()" File="@synn_env.createActors.__getFileType()" />
+        <Layer Condition="synn_env.createActors.__condition()" File="@synn_env.createActors.__getFileType()" />
+        <Layer Condition="synn_env.createActors.__condition()" File="@synn_env.createActors.__getFileType()" />
+        <Layer Condition="synn_env.createActors.__condition()" File="@synn_env.createActors.__getFileType()" />
+        <Layer Condition="synn_env.createActors.__condition()" File="@synn_env.createActors.__getFileType()" />
+        <Layer Condition="synn_env.createActors.__condition()" File="@synn_env.createActors.__getFileType()" />
+        <Layer Condition="synn_env.createActors.__condition()" File="@synn_env.createActors.__getFileType()" />
+        <Layer Condition="synn_env.createActors.__condition()" File="@synn_env.createActors.__getFileType()" />
+        <Layer Condition="synn_env.createActors.__condition()" File="@synn_env.createActors.__getFileType()" />
+        <Layer Condition="synn_env.createActors.__condition()" File="@synn_env.createActors.__getFileType()" />
+
+
+
+        <Layer Condition="synn_env.createActors.__canContinue()" File="actors.xml" />
+    </children>
+</ActorFrame>

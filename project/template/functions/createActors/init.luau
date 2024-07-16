@@ -1,7 +1,7 @@
 --!strict
 
-local Types = require("../types/TypeDefs")
-local _G = require("../globals")
+local Types = require("../../types/TypeDefs")
+local _G = require("../../globals")
 
 local exports = {}
 exports.__classes = {} :: { class<any> }
@@ -42,6 +42,10 @@ local function removeChildFromTable(child)
 	if childIndex then table.remove(exports.__classes, childIndex) end
 end
 
+local resolvePathsFor = { "File", "Texture", "Font" }
+local resolvePathsFor2 = { "Frag", "Vert" } -- shaders handle paths differently for some reason...
+local rootPath = string.rep("../", #string.split(_G.resolveLuaPath(""), "/")) -- this line is terrible, but it's for the reason above
+
 local function _constructor(class: string)
 	if _G.templateReady then error("Cannot call createActor after the song has loaded") end
 	if not _G.CREATE_ACTORS_IN_LUA then error("Cannot call createActor because CREATE_ACTORS_IN_LUA is disabled") end
@@ -74,7 +78,8 @@ local function _constructor(class: string)
 
 		for i, v in pairs(props) do
 			if i ~= "className" then thisClass[i] = v end
-			if i == "File" or i == "Texture" then thisClass[i] = _G.resolveLuaPath(v, 3) end
+			if table.find(resolvePathsFor, i) then thisClass[i] = _G.resolveLuaPath(v, 3) end
+			if table.find(resolvePathsFor2, i) then thisClass[i] = rootPath .. _G.resolveLuaPath(v, 3) end
 		end
 
 		table.insert(exports.__classes, thisClass)
@@ -136,39 +141,40 @@ function exports.__condition()
 	return true
 end
 
-function exports.__canContinue()
-	local thisLayer: layer_schema = currentStack:getTop()
-	return thisLayer.width > thisLayer.nodeIndex
-end
-
-function exports.__getType()
-	local thisLayer: layer_schema = currentStack:getTop()
-	if thisLayer.currentDepth < thisLayer.depth then return end
-
-	thisLayer.index += 1
-	local thisClass = thisLayer.classes[thisLayer.index]
-	if thisClass.className == "ActorFrame" and (thisClass.Children and #thisClass.Children > 0) then return end
-	return thisClass.className
-end
-
-local xmlPath = "createLuaActors.xml"
-function exports.__getFile(): string?
+function exports.__getFileType()
 	local thisLayer: layer_schema = currentStack:getTop()
 	if thisLayer.currentDepth < thisLayer.depth then
 		thisLayer.currentDepth += 1
-		return xmlPath
+		return "actors.xml"
 	end
 
+	thisLayer.index += 1
 	local thisClass = thisLayer.classes[thisLayer.index]
 	if thisClass.className == "ActorFrame" and (thisClass.Children and #thisClass.Children > 0) then
 		currentStack:newLayer(thisClass)
-		return xmlPath
+		return "actors.xml"
 	end
 
-	return thisClass.File
+	if thisClass.Frag or thisClass.Vert then return "shader.xml" end
+	if thisClass.Text or thisClass.Font then return "bitmapText.xml" end
+	return "baseActor.xml"
+end
+
+local propertyDefaults = {
+	Frag = "nop.frag",
+	Vert = "nop.vert",
+	Text = "",
+	Font = "_eurostile normal",
+}
+function exports.__getProperty(property: string): any
+	local thisLayer: layer_schema = currentStack:getTop()
+	local thisClass = thisLayer.classes[thisLayer.index]
+	return thisClass[property] or propertyDefaults[property]
 end
 
 function exports.__onInit(actor: any)
+	if actor:hascommand("Init") then actor:removecommand("Init") end -- don't you love it when InitCommand runs twice?
+
 	local thisLayer: layer_schema = currentStack:getTop()
 	if thisLayer.currentDepth < 1 then
 		currentStack:pop()
@@ -190,7 +196,7 @@ function exports.__onInit(actor: any)
 		end
 
 		for commandName, commandFunction in pairs(thisClass) do
-			if string.sub(commandName, -7) == "Command" and typeof(commandFunction) == "function" then
+			if string.sub(commandName, -7) == "Command" and type(commandFunction) == "function" then
 				commandName = string.sub(commandName, 1, -8)
 				if actor:hascommand(commandName) then actor:removecommand(commandName) end
 				actor:addcommand(commandName, commandFunction)
@@ -204,6 +210,11 @@ function exports.__onInit(actor: any)
 	if thisLayer.nodes[thisLayer.currentDepth] >= NODES_PER_ACTOR_FRAME or thisLayer.width <= thisLayer.index then
 		thisLayer.currentDepth -= 1
 	end
+end
+
+function exports.__canContinue()
+	local thisLayer: layer_schema = currentStack:getTop()
+	return thisLayer.width > thisLayer.nodeIndex
 end
 
 function exports.__init()

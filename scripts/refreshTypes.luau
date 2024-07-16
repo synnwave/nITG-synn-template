@@ -44,8 +44,8 @@ return function()
 			pcall(function()
 				local utils = require("mock/utilities")
 				utils.beginMock(true)
-				utils.cache["project/template/functions/createActors.luau"] = {
-					CreateActor = function(thisType: string)
+				utils.cache["project/template/functions/createActors/init.luau"] = {
+					createActor = function(thisType: string)
 						thisType = thisType or "Actor"
 						if thisType == "" then thisType = "Actor" end
 						if not extractedTypes[thisType] then extractedTypes[thisType] = {} end

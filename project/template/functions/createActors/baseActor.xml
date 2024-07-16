@@ -1,0 +1,5 @@
+<Layer 
+    Type="@synn_env.createActors.__getProperty('className')" 
+    File="@synn_env.createActors.__getProperty('File')" 
+    InitCommand="%synn_env.createActors.__onInit"
+/>
