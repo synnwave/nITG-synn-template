@@ -172,6 +172,16 @@ function exports.__getProperty(property: string): any
 	return thisClass[property] or propertyDefaults[property]
 end
 
+local function useCommand(actor, command: (string | (...any) -> ...any)?)
+	return function()
+		if type(command) == "string" then
+			actor:cmd(command)
+		elseif type(command) == "function" then
+			command(actor)
+		end
+	end
+end
+
 function exports.__onInit(actor: any)
 	if actor:hascommand("Init") then actor:removecommand("Init") end -- don't you love it when InitCommand runs twice?
 
@@ -195,20 +205,12 @@ function exports.__onInit(actor: any)
 			end,
 		})
 
-		local initFunc = thisClass.InitCommand
-		if initFunc then
-			if type(initFunc) == "string" then
-				actor:cmd(initFunc)
-			elseif type(initFunc) == "function" then
-				initFunc(actor)
-			end
-		end
-
+		useCommand(actor, thisClass.InitCommand)()
 		for name, func in pairs(thisClass) do
-			if name ~= "InitCommand" and string.sub(name, -7) == "Command" and type(func) == "function" then
+			if name ~= "InitCommand" and string.sub(name, -7) == "Command" then
 				name = string.sub(name, 1, -8)
 				if actor:hascommand(name) then actor:removecommand(name) end
-				actor:addcommand(name, func)
+				actor:addcommand(name, useCommand(actor, func))
 			end
 		end
 	else
