@@ -148,7 +148,7 @@ function exports.__getType()
 
 	thisLayer.index += 1
 	local thisClass = thisLayer.classes[thisLayer.index]
-	if thisClass.__className == "ActorFrame" and (thisClass.Children and #thisClass.Children > 0) then return end
+	if thisClass.__className == "ActorFrame" and (thisClass.__children and #thisClass.__children > 0) then return end
 	if thisClass.Frag or thisClass.Vert or thisClass.Text or thisClass.Font then return end
 
 	return thisClass.__className
@@ -162,7 +162,7 @@ function exports.__getFile(): string?
 	end
 
 	local thisClass = thisLayer.classes[thisLayer.index]
-	if thisClass.__className == "ActorFrame" and (thisClass.Children and #thisClass.Children > 0) then
+	if thisClass.__className == "ActorFrame" and (thisClass.__children and #thisClass.__children > 0) then
 		currentStack:newLayer(thisClass)
 		return "actors.xml"
 	end
