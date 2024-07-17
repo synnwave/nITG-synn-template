@@ -15,13 +15,15 @@ type class<T> = T & {
 }
 type constructorProps<T> = {
 	Name: string?,
-	InitCommand: ((self: T) -> ())?,
 	Children: { class<any> }?,
 
 	File: string?,
 	Texture: string?,
 	Frag: string?,
 	Vert: string?,
+
+	InitCommand: ((self: T) -> ())?,
+	OnCommand: ((self: T) -> ())?,
 
 	[string]: any,
 }
