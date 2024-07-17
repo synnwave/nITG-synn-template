@@ -22,8 +22,8 @@ type constructorProps<T> = {
 	Frag: string?,
 	Vert: string?,
 
-	InitCommand: ((self: T) -> ())?,
-	OnCommand: ((self: T) -> ())?,
+	InitCommand: (string | ((self: T) -> ()))?,
+	OnCommand: (string | ((self: T) -> ()))?,
 
 	[string]: any,
 }
