@@ -62,7 +62,8 @@ return function()
 					end,
 				}
 
-				utils.runScript("project/src/main.luau")
+				local returned = utils.runScript("project/src/main.luau")
+				if typeof(returned) == "table" and returned.initActors then returned.initActors() end
 			end)
 		end
 	end

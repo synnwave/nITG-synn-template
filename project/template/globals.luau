@@ -8,7 +8,9 @@
 local T = require("types/TypeDefs")
 local XMLTypes = require("types/XMLTypeDefs")
 
-local configuration = require("../src/configuration")
+local configuration
+pcall(function() configuration = require("../src/configuration") end)
+configuration = configuration or {}
 
 local globals = {
 	foreground = foreground :: T.ActorFrame,
