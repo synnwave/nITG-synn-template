@@ -56,6 +56,7 @@ local function _constructor(class: string)
 	return function<T>(props: constructorProps<T>)
 		local thisClass = {} :: any
 		thisClass.__className = class
+
 		function thisClass:appendChild<C>(child: any)
 			if class ~= "ActorFrame" or not thisClass.__children then
 				error(`Cannot append child "{child.__className}" to class of type "{class}"`)
@@ -141,23 +142,34 @@ function exports.__condition()
 	return true
 end
 
-function exports.__getFileType()
+function exports.__getType()
+	local thisLayer: layer_schema = currentStack:getTop()
+	if thisLayer.currentDepth < thisLayer.depth then return end
+
+	thisLayer.index += 1
+	local thisClass = thisLayer.classes[thisLayer.index]
+	if thisClass.__className == "ActorFrame" and (thisClass.Children and #thisClass.Children > 0) then return end
+	if thisClass.Frag or thisClass.Vert or thisClass.Text or thisClass.Font then return end
+
+	return thisClass.__className
+end
+
+function exports.__getFile(): string?
 	local thisLayer: layer_schema = currentStack:getTop()
 	if thisLayer.currentDepth < thisLayer.depth then
 		thisLayer.currentDepth += 1
 		return "actors.xml"
 	end
 
-	thisLayer.index += 1
 	local thisClass = thisLayer.classes[thisLayer.index]
-	if thisClass.__className == "ActorFrame" and (thisClass.__children and #thisClass.__children > 0) then
+	if thisClass.__className == "ActorFrame" and (thisClass.Children and #thisClass.Children > 0) then
 		currentStack:newLayer(thisClass)
 		return "actors.xml"
 	end
 
 	if thisClass.Frag or thisClass.Vert then return "shader.xml" end
 	if thisClass.Text or thisClass.Font then return "bitmapText.xml" end
-	return "baseActor.xml"
+	return thisClass.File
 end
 
 local propertyDefaults = {
@@ -193,6 +205,7 @@ function exports.__onInit(actor: any)
 
 	local thisClass = thisLayer.classes[thisLayer.index]
 	if thisLayer.currentDepth == thisLayer.depth then
+		if thisClass.Frag or thisClass.Vert then actor = actor:GetChildAt(0) end
 		if thisClass.Name then actor:SetName(thisClass.Name) end
 
 		setmetatable(thisClass :: any, {

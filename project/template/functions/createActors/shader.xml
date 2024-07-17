@@ -1,11 +1,7 @@
 <ActorFrame><children>
-
     <Layer 
         Type="@synn_env.createActors.__getProperty('__className')" 
         Frag="@synn_env.createActors.__getProperty('Frag')" 
         Vert="@synn_env.createActors.__getProperty('Vert')"  
-        File="@synn_env.createActors.__getProperty('File')" 
-        InitCommand="%synn_env.createActors.__onInit"
     />
-
 </children></ActorFrame>

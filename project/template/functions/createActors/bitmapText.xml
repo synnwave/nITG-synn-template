@@ -2,6 +2,4 @@
     Type="@synn_env.createActors.__getProperty('__className')" 
     Text="@synn_env.createActors.__getProperty('Text')" 
     Font="@synn_env.createActors.__getProperty('Font')"  
-    File="@synn_env.createActors.__getProperty('File')" 
-    InitCommand="%synn_env.createActors.__onInit"
 />

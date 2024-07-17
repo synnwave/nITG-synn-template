@@ -59,7 +59,7 @@ do --> Utilities for setting up AFTs & Sprites
 		thisSprite:basezoomx(_G.SW / _G.DW)
 		thisSprite:basezoomy(-_G.SH / _G.DH)
 		thisSprite:x(_G.SCX)
-		thisSprite:y(_G.SCX)
+		thisSprite:y(_G.SCY)
 		return thisSprite
 	end
 
