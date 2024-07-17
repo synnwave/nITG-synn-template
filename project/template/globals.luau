@@ -270,4 +270,17 @@ if synn_env then
 	globals.DH = globals.DISPLAY:GetDisplayHeight()
 end
 
+function globals.assureCaller(
+	name: string,
+	templateReadyCheckDisabled: boolean?,
+	isLoadingUserModsCheckDisabled: boolean?
+)
+	if (not templateReadyCheckDisabled) and globals.templateReady then
+		error(`cannot call {name} after the song has loaded`)
+	end
+	if (not isLoadingUserModsCheckDisabled) and not globals.isLoadingUserMods then
+		error(`cannot call {name} because the template hasn't fully initialized yet`)
+	end
+end
+
 return globals

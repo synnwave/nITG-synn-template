@@ -6,21 +6,23 @@ local _G = require("../../globals")
 local exports = {}
 exports.__classes = {} :: { class<any> }
 
-type class<T> = {
-	actor: T,
-	className: string,
-	Children: { any }?,
-	[string]: any,
-
-	get: (self: class<T>) -> T,
+type class<T> = T & {
+	__className: string,
+	__children: { any }?,
 	appendChild: <C>(self: class<T>, C & {}) -> (),
+
+	[string]: any,
 }
 type constructorProps<T> = {
 	Name: string?,
 	InitCommand: ((self: T) -> ())?,
+	Children: { class<any> }?,
+
 	File: string?,
 	Texture: string?,
-	Children: { class<any> }?,
+	Frag: string?,
+	Vert: string?,
+
 	[string]: any,
 }
 type innerConstructor<T> = (props: constructorProps<T>) -> class<T>
@@ -52,21 +54,19 @@ local function _constructor(class: string)
 	if _G.isLoadingUserMods then error("Cannot call createActor because the template has already initialized") end
 
 	return function<T>(props: constructorProps<T>)
-		local thisClass = {} :: class<any>
-		thisClass.className = class
+		local thisClass = {} :: any
+		thisClass.__className = class
 		function thisClass:appendChild<C>(child: any)
-			if class ~= "ActorFrame" or not thisClass.Children then
-				error(`Cannot append child "{child.className}" to class of type "{class}"`)
+			if class ~= "ActorFrame" or not thisClass.__children then
+				error(`Cannot append child "{child.__className}" to class of type "{class}"`)
 			end
 
 			removeChildFromTable(child)
-			table.insert(thisClass.Children, child)
+			table.insert(thisClass.__children, child)
 		end
-		function thisClass:get() return assert(thisClass.actor, "actor doesn't exist yet") end
-
 		if props.Children then
 			if class == "ActorFrame" then
-				if not thisClass.Children then thisClass.Children = {} end
+				if not thisClass.__children then thisClass.__children = {} end
 				for _, child in ipairs(props.Children) do
 					thisClass:appendChild(child)
 				end
@@ -74,10 +74,10 @@ local function _constructor(class: string)
 				error(`Class "{class}" cannot have any children since it's not an ActorFrame`)
 			end
 		end
-		if class == "ActorFrame" then thisClass.Children = thisClass.Children or {} end
+		if class == "ActorFrame" then thisClass.__children = thisClass.__children or {} end
 
 		for i, v in pairs(props) do
-			if i ~= "className" then thisClass[i] = v end
+			if i ~= "className" and i ~= "__className" then thisClass[i] = v end
 			if table.find(resolvePathsFor, i) then thisClass[i] = _G.resolveLuaPath(v, 3) end
 			if table.find(resolvePathsFor2, i) then thisClass[i] = rootPath .. _G.resolveLuaPath(v, 3) end
 		end
@@ -117,11 +117,11 @@ local stackMetatable = {
 stackMetatable.__index = stackMetatable
 function stackMetatable:getTop() return self[#self] end
 function stackMetatable:newLayer(classes: any)
-	if not classes.Children then return end
+	if not classes.__children then return end
 	self:push({
-		classes = classes.Children,
-		depth = getDepth(classes.Children),
-		width = #classes.Children,
+		classes = classes.__children,
+		depth = getDepth(classes.__children),
+		width = #classes.__children,
 		currentDepth = 1,
 		index = 0,
 		nodes = {},
@@ -150,7 +150,7 @@ function exports.__getFileType()
 
 	thisLayer.index += 1
 	local thisClass = thisLayer.classes[thisLayer.index]
-	if thisClass.className == "ActorFrame" and (thisClass.Children and #thisClass.Children > 0) then
+	if thisClass.__className == "ActorFrame" and (thisClass.__children and #thisClass.__children > 0) then
 		currentStack:newLayer(thisClass)
 		return "actors.xml"
 	end
@@ -168,7 +168,7 @@ local propertyDefaults = {
 }
 function exports.__getProperty(property: string): any
 	local thisLayer: layer_schema = currentStack:getTop()
-	local thisClass = thisLayer.classes[thisLayer.index]
+	local thisClass = thisLayer.classes[thisLayer.index] :: any
 	return thisClass[property] or propertyDefaults[property]
 end
 
@@ -184,7 +184,16 @@ function exports.__onInit(actor: any)
 	local thisClass = thisLayer.classes[thisLayer.index]
 	if thisLayer.currentDepth == thisLayer.depth then
 		if thisClass.Name then actor:SetName(thisClass.Name) end
-		thisClass.actor = actor
+
+		setmetatable(thisClass :: any, {
+			__index = function(self, prop)
+				local actorProp = actor[prop]
+				if type(actorProp) == "function" then -- allow actor functions to be accessed
+					return function(_, ...: any) return actorProp(actor, ...) end
+				end
+				return rawget(self, prop)
+			end,
+		})
 
 		local initFunc = thisClass.InitCommand
 		if initFunc then
@@ -195,11 +204,11 @@ function exports.__onInit(actor: any)
 			end
 		end
 
-		for commandName, commandFunction in pairs(thisClass) do
-			if string.sub(commandName, -7) == "Command" and type(commandFunction) == "function" then
-				commandName = string.sub(commandName, 1, -8)
-				if actor:hascommand(commandName) then actor:removecommand(commandName) end
-				actor:addcommand(commandName, commandFunction)
+		for name, func in pairs(thisClass) do
+			if name ~= "InitCommand" and string.sub(name, -7) == "Command" and type(func) == "function" then
+				name = string.sub(name, 1, -8)
+				if actor:hascommand(name) then actor:removecommand(name) end
+				actor:addcommand(name, func)
 			end
 		end
 	else
@@ -219,7 +228,7 @@ end
 
 function exports.__init()
 	currentStack = setmetatable({}, stackMetatable)
-	currentStack:newLayer({ Children = exports.__classes })
+	currentStack:newLayer({ __children = exports.__classes })
 end
 
 return exports
