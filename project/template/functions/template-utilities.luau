@@ -56,10 +56,10 @@ do --> Utilities for setting up AFTs & Sprites
 		end
 
 		setupCache[thisSprite] = true
-		thisSprite:basezoomx(_G.SCREEN_WIDTH / _G.DISPLAY:GetDisplayWidth())
-		thisSprite:basezoomy(-_G.SCREEN_HEIGHT / _G.DISPLAY:GetDisplayHeight())
-		thisSprite:x(_G.SCREEN_CENTER_X)
-		thisSprite:y(_G.SCREEN_CENTER_Y)
+		thisSprite:basezoomx(_G.SW / _G.DW)
+		thisSprite:basezoomy(-_G.SH / _G.DH)
+		thisSprite:x(_G.SCX)
+		thisSprite:y(_G.SCX)
 		return thisSprite
 	end
 
@@ -81,7 +81,7 @@ do --> Setup Utilities
 	function exports.setupJudgeProxy(proxy: Types.ActorProxy?, target: Types.Actor?, playerID: number)
 		if not (proxy and target) then return end
 		proxy:SetTarget(target)
-		proxy:xy(_G.SCREEN_CENTER_X * (playerID - 0.5), _G.SCREEN_CENTER_Y)
+		proxy:xy(_G.SCX * (playerID - 0.5), _G.SCY)
 		target:hidden(1)
 		target:sleep(math.huge)
 
@@ -97,4 +97,5 @@ do --> Setup Utilities
 		_G.foreground:hidden(1)
 	end
 end
+
 return exports
