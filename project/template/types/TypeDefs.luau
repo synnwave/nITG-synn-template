@@ -959,10 +959,8 @@ export type Player = ActorFrame & {
 }
 --------------------------------------
 
-----> CLASS: Quad (Actor) <----
-export type Quad = Actor & {
-	-- TODO:
-}
+----> CLASS: Quad (Sprite) <----
+export type Quad = Sprite
 -------------------------------
 
 --> CONSTANTS
