@@ -1,5 +1,0 @@
-<Layer 
-    Type="@synn_env.createActors.__getProperty('__className')" 
-    Text="@synn_env.createActors.__getProperty('Text')" 
-    Font="@synn_env.createActors.__getProperty('Font')"  
-/>

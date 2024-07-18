@@ -21,6 +21,7 @@ type constructorProps<T> = {
 	Texture: string?,
 	Frag: string?,
 	Vert: string?,
+	Text: string?,
 
 	InitCommand: (string | ((self: T) -> ()))?,
 	OnCommand: (string | ((self: T) -> ()))?,
@@ -170,19 +171,18 @@ function exports.__getFile(): string?
 	end
 
 	if thisClass.Frag or thisClass.Vert then return "shader.xml" end
-	if thisClass.Text or thisClass.Font then return "bitmapText.xml" end
 	return thisClass.File
 end
 
 local propertyDefaults = {
 	Frag = "nop.frag",
 	Vert = "nop.vert",
-	Text = "",
-	Font = "_eurostile normal",
 }
 function exports.__getProperty(property: string): any
 	local thisLayer: layer_schema = currentStack:getTop()
 	local thisClass = thisLayer.classes[thisLayer.index] :: any
+	if property == "Font" and thisClass.__className == "BitmapText" then return thisClass[property] or "common" end -- only return a fallback if it's a BitmapText
+
 	return thisClass[property] or propertyDefaults[property]
 end
 
@@ -209,6 +209,7 @@ function exports.__onInit(actor: any)
 	if thisLayer.currentDepth == thisLayer.depth then
 		if thisClass.Frag or thisClass.Vert then actor = actor:GetChildAt(0) end
 		if thisClass.Name then actor:SetName(thisClass.Name) end
+		if thisClass.Text then actor:settext(thisClass.Text) end
 
 		setmetatable(thisClass :: any, {
 			__index = function(self, prop)
