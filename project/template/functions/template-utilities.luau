@@ -11,10 +11,9 @@ local assureCaller = _G.assureCaller
 do --> Utilities for setting up AFTs & Sprites
 	local setupCache: { [any]: boolean } = {}
 	function exports.setupAFT(aft: Types.ActorFrameTexture? | XMLTypes.ActorFrameTexture_names): Types.ActorFrameTexture
-		assureCaller("setupAFT")
-
 		local thisAFT: Types.ActorFrameTexture?
 		if type(aft) == "string" then
+			assureCaller("setupAFT")
 			thisAFT = _G.Actors[aft]
 		else
 			thisAFT = aft
@@ -38,10 +37,9 @@ do --> Utilities for setting up AFTs & Sprites
 	end
 
 	function exports.setupSprite(sprite: Types.Sprite? | XMLTypes.Sprite_names): Types.Sprite
-		assureCaller("setupSprite")
-
 		local thisSprite: Types.Sprite?
 		if type(sprite) == "string" then
+			assureCaller("setupSprite")
 			thisSprite = _G.Actors[sprite]
 		else
 			thisSprite = sprite
@@ -67,8 +65,6 @@ do --> Utilities for setting up AFTs & Sprites
 		aft: Types.ActorFrameTexture? | XMLTypes.ActorFrameTexture_names,
 		sprite: Types.Sprite? | XMLTypes.Sprite_names
 	): (Types.ActorFrameTexture, Types.Sprite)
-		assureCaller("setupAFTAndSprite")
-
 		local thisAFT = exports.setupAFT(aft)
 		local thisSprite = exports.setupSprite(sprite)
 

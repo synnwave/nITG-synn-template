@@ -36,7 +36,9 @@ do --> "easeMod", "setMod", "resetMod"
 		easing: (_E.allEasings | _E.easingType)?,
 		mod: { percent: number, mod: Types.mods } | { { percent: number, mod: Types.mods } },
 		player: (number | { number })?,
-		relativePercent: boolean?,
+
+		relativePercent: boolean?, -- "relativePercent" and "add" are the same thing, add is only here as a shorthand
+		add: boolean?, -- "add" & "acc" from the mirin template don't exist here, use this value instead (add = easeMod, acc = setMod)
 
 		endMode: boolean?,
 		time: boolean?,
@@ -65,7 +67,7 @@ do --> "easeMod", "setMod", "resetMod"
 	}
 	internals.__eases = {} :: { INTERNAL_ease }
 	function exports.easeMod(props: ease_props)
-		assureCaller("easeMod")
+		assureCaller("easeMod", false, true)
 
 		if not props.player then props.player = rawget(_G :: any, "affectedPlayers") or { 1, 2 } end -- i HATE metatables..
 
@@ -78,7 +80,7 @@ do --> "easeMod", "setMod", "resetMod"
 			time = props.time,
 			player = props.player,
 
-			relative = props.relativePercent,
+			relative = props.add or props.relativePercent,
 			reset = props.__reset,
 			only = props.__only,
 			exclude = props.__exclude,
@@ -114,7 +116,7 @@ do --> "easeMod", "setMod", "resetMod"
 
 	--> setMod
 	function exports.setMod(props: ease_props)
-		assureCaller("setMod")
+		assureCaller("setMod", false, true)
 
 		props.length = 0
 		props.easing = _E.instant
@@ -129,7 +131,7 @@ do --> "easeMod", "setMod", "resetMod"
 		exclude: { Types.mods }?,
 	}
 	function exports.resetMod(props: reset_props)
-		assureCaller("resetMod")
+		assureCaller("resetMod", false, true)
 
 		props.__reset = true
 		if props.only then
@@ -180,7 +182,7 @@ do --> "bindFunction", "bindToFrame", "easeFunction"
 
 	internals.__functions = {} :: { INTERNAL_bindFunction }
 	function exports.bindFunction(props: bindFunction_props)
-		assureCaller("bindFunction")
+		assureCaller("bindFunction", false, true)
 
 		local thisFunction = {
 			beat = props.beat or 0,
@@ -225,7 +227,7 @@ do --> "bindFunction", "bindToFrame", "easeFunction"
 		__index = function() error("you cannot use poptions and persist at the same time. </3") end,
 	})
 	function exports.bindToFrame(props: bindToFrame_props, noPoptions: boolean?)
-		assureCaller("bindToFrame")
+		assureCaller("bindToFrame", false, true)
 
 		local thisFunction = {
 			beat = props.beat or 0,
@@ -280,7 +282,7 @@ do --> "bindFunction", "bindToFrame", "easeFunction"
 		easing: (_E.allEasings | _E.easingType)?,
 	}
 	function exports.easeFunction(props: easeFunction_props)
-		assureCaller("easeFunction")
+		assureCaller("easeFunction", false, true)
 
 		local thisFunction = {
 			beat = props.beat or 0,
