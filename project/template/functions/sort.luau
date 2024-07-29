@@ -110,7 +110,7 @@ function sort._sort_setup<V>(array: { V }, comp: ((V, V) -> boolean)?)
 	if not trivial then
 		--check comp
 		if thisComp(array[1], array[1]) then
-			error("invalid order function for sorting; comp(v, v) should not be true for any v.")
+			error("invalid order function for sorting; comp(v, v) should not be true for any v.", 2)
 		end
 	end
 	--setup complete

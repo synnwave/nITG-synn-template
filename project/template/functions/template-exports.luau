@@ -224,7 +224,7 @@ do --> "bindFunction", "bindToFrame", "easeFunction"
 		endMode: boolean?,
 	}
 	local preventPoptions: any = setmetatable({}, {
-		__index = function() error("you cannot use poptions and persist at the same time. </3") end,
+		__index = function() error("you cannot use poptions and persist at the same time. </3", 2) end,
 	})
 	function exports.bindToFrame(props: bindToFrame_props, noPoptions: boolean?)
 		assureCaller("bindToFrame", false, true)
@@ -456,14 +456,14 @@ do --> Runtime
 		if not internals.__auxes[mod] then
 			-- stylua: ignore start
 			if table.find(bannedCharsList, string.sub(mod, 1, 1)) or table.find(bannedCharsList, string.sub(mod, #mod, #mod)) then
-				error(`You have a typo in your mod name. You wrote '{mod}', but you probably meant '{string.gsub(mod, `[{bannedCharacters}]`, "")}'`)
+				error(`You have a typo in your mod name. You wrote '{mod}', but you probably meant '{string.gsub(mod, `[{bannedCharacters}]`, "")}'`,2)
 			end
 			-- stylua: ignore end
 			if string.find(mod, "^c[0-9]+$") then
-				error(`You can't name your mod '{mod}'.\nUse 'cmod' if you want to set a cmod.`)
+				error(`You can't name your mod '{mod}'.\nUse 'cmod' if you want to set a cmod.`, 2)
 			end
 			if string.find(mod, "^[0-9.]+x$") then
-				error(`You can't name your mod '{mod}'.\nUse 'xmod' if you want to set an xmod.`)
+				error(`You can't name your mod '{mod}'.\nUse 'xmod' if you want to set an xmod.`, 2)
 			end
 		end
 
@@ -827,7 +827,7 @@ do --> Runtime
 		return (priorityA * priorityA * priorityB) < (priorityA * priorityB * priorityB)
 	end)
 	local preventBindFunctionPoptions: any = setmetatable({}, {
-		__index = function() error("you cannot use poptions on bindFunction") end, -- because bindToFrame shares the same type as bindFunction
+		__index = function() error("you cannot use poptions on bindFunction", 2) end, -- because bindToFrame shares the same type as bindFunction
 	})
 	local function runFunctions(beat: number, time: number, deltaTime: number)
 		while functionsIndex <= #internals.__functions do

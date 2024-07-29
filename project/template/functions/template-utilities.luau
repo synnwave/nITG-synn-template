@@ -19,11 +19,10 @@ do --> Utilities for setting up AFTs & Sprites
 			thisAFT = aft
 		end
 
-		assert(thisAFT, `[_F.setupAFT]: AFT{type(aft) == "string" and ` '{aft}' ` or " "}doesn't exist`)
-		if setupCache[thisAFT] then
-			print(`[_F.setupAFT]: AFT{type(aft) == "string" and ` '{aft}' ` or " "}has already been set up.`)
-			return thisAFT
+		if not thisAFT then
+			error(`[_F.setupAFT]: AFT{type(aft) == "string" and ` '{aft}' ` or " "}doesn't exist`, 2)
 		end
+		if setupCache[thisAFT] then return thisAFT end
 
 		setupCache[thisAFT] = true
 		thisAFT:SetWidth(_G.DISPLAY:GetDisplayWidth())
@@ -45,13 +44,10 @@ do --> Utilities for setting up AFTs & Sprites
 			thisSprite = sprite
 		end
 
-		assert(thisSprite, `[_F.setupSprite]: Sprite{type(sprite) == "string" and ` '{sprite}' ` or " "}doesn't exist`)
-		if setupCache[thisSprite] then
-			print(
-				`[_F.setupSprite]: Sprite{type(sprite) == "string" and ` '{sprite}' ` or " "}has already been set up.`
-			)
-			return thisSprite
+		if not thisSprite then
+			error(`[_F.setupSprite]: Sprite{type(sprite) == "string" and ` '{sprite}' ` or " "}doesn't exist`, 2)
 		end
+		if setupCache[thisSprite] then return thisSprite end
 
 		setupCache[thisSprite] = true
 		thisSprite:basezoomx(_G.SW / _G.DW)

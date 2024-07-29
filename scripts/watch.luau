@@ -21,7 +21,7 @@ end
 task.spawn(makeResponse)
 
 local function iterateDir(startingPath, method: (thisFile: string) -> ())
-	if not fs.isDir(startingPath) then return warn(`Path isn't a directory ({startingPath})`) end
+	if not fs.isDir(startingPath) then return print(`Path isn't a directory ({startingPath})`) end
 	for _, file in fs.readDir(startingPath) do
 		local thisFile = `{startingPath}/{file}`
 		method(thisFile)

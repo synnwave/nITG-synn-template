@@ -4,11 +4,11 @@ local fs = require("@lune/fs")
 local process = require("@lune/process")
 
 local projectDir = "project"
-local outputDir = "DO_NOT_MODIFY-output"
+local outputDir = ".build"
 local FILE_ENDING = { from = ".luau", to = ".lua" }
 
 local function dirFileIterator(startingPath, method: (startingPath: string, file: string, thisFile: string) -> ())
-	if not fs.isDir(startingPath) then return warn(`Path isn't a directory ({startingPath})`) end
+	if not fs.isDir(startingPath) then return print(`Path isn't a directory ({startingPath})`) end
 	for _, file in fs.readDir(startingPath) do
 		local thisFile = `{startingPath}/{file}`
 		if fs.isFile(thisFile) then
@@ -59,7 +59,8 @@ return function()
 			end
 
 			local fileContents = fs.readFile(thisFile)
-			fileContents = `-- File processed using darklua --> https://darklua.com/\n{fileContents}` --> Add darklua comment
+			fileContents =
+				`-- Don't edit this script! File processed using darklua --> https://darklua.com/\n{fileContents}` --> Add darklua comment
 			fileContents = fileContents:gsub("for .-do", function(str) --> Fix loops
 				-- TODO: make this not fuck up when there's a string with the word "for" in it 😭
 				local variablesToFix = str:match("for (.-) in") or str:match("for (.-)=")

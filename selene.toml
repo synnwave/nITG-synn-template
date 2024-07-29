@@ -1,4 +1,4 @@
-exclude = ["DO_NOT_MODIFY-output/*"]
+
 std = "luau"
 [lints]
 manual_table_clone = "allow"

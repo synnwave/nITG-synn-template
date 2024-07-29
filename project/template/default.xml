@@ -1,7 +1,7 @@
 <ActorFrame
 	InitCommand = "%function(self)
         ROOT = GAMESTATE:GetCurrentSong():GetSongDir()
-        outputFolder = ROOT .. 'DO_NOT_MODIFY-output/'
+        outputFolder = ROOT .. '.build/'
 		loadfile(outputFolder .. 'template/__xml-init')()(self)
 
 		--> now that initMain has been called, we can use string requires without having to concatenate the root path

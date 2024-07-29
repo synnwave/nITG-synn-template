@@ -41,10 +41,10 @@ Easings.blendEase = setmetatable({}, {
 			local transient1 = fn1(1) <= 0.5
 			local transient2 = fn2(1) <= 0.5
 			if transient1 and not transient2 then
-				error("blendEase: the first argument is a transient ease, but the second argument doesn't match")
+				error("blendEase: the first argument is a transient ease, but the second argument doesn't match", 2)
 			end
 			if transient2 and not transient1 then
-				error("blendEase: the second argument is a transient ease, but the first argument doesn't match")
+				error("blendEase: the second argument is a transient ease, but the first argument doesn't match", 2)
 			end
 			self[fn1][fn2] = function(x: number)
 				local mixFactor = 3 * x ^ 2 - 2 * x ^ 3
