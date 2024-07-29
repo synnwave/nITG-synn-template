@@ -1,14 +1,7 @@
 <Layer Type = "ActorFrame"><children>
-	<Layer Type = "ActorProxy" Name = "PC[1]" />
-	<Layer Type = "ActorProxy" Name = "PC[2]" />
-	<Layer Type = "ActorProxy" Name = "PJ[1]" />
-	<Layer Type = "ActorProxy" Name = "PJ[2]" />
-	<Layer Type = "ActorProxy" Name = "PP[1]" />
-	<Layer Type = "ActorProxy" Name = "PP[2]" />
 
-	
-	<!-- Load Lua Actors (feel free to remove if you're not making any actors in your scripts) -->
-	<!-- see configuration.luau for more info! -->
-	<Layer File = "../template/functions/createActors/actors.xml" Condition = "synn_env.definedGlobals.CREATE_ACTORS_IN_LUA" />
+	<!-- Load Lua Actors -->
+	<!-- see: https://github.com/synnwave/nITG-synn-template/pull/1 -->
+	<Layer File = "../template/functions/createActors/actors.xml" />
 	
 </children></Layer>

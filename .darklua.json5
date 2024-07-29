@@ -13,7 +13,9 @@
     "filter_after_early_return",
     "remove_empty_do",
     "convert_index_to_field",
-    "rename_variables",
+
+    "rename_variables", // comment this line if you're debugging! this line is enabled by default to save on file sizes.
+
     "remove_function_call_parens",
     "compute_expression",
   ],

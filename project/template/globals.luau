@@ -30,7 +30,6 @@ local globals = {
 
 	--> Configuration
 	PLAYER_COUNT = configuration.MAX_PLAYERS or 8,
-	CREATE_ACTORS_IN_LUA = configuration.CREATE_ACTORS_IN_LUA,
 	affectedPlayers = configuration.affectedPlayers or { 1, 2 } :: (number | { number })?,
 
 	--> GLOBAL Functions

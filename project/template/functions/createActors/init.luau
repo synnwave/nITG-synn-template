@@ -9,11 +9,26 @@ exports.__classes = {} :: { class<any> }
 type class<T> = T & {
 	__className: string,
 	__children: { any }?,
-	appendChild: <C>(self: class<T>, C & {}) -> (),
+	appendChild: <C>(self: class<T>, C & {}) -> C,
 
 	[string]: any,
 }
 type constructorProps<T> = {
+	Name: string?,
+	Children: nil,
+	File: string?,
+	Texture: string?,
+	Frag: string?,
+	Vert: string?,
+	Text: string?,
+	Font: string?,
+
+	InitCommand: (string | ((self: T) -> ()))?,
+	OnCommand: (string | ((self: T) -> ()))?,
+
+	[string]: any,
+}
+type constructorProps_ActorFrame = {
 	Name: string?,
 	Children: { class<any> }?,
 
@@ -22,19 +37,45 @@ type constructorProps<T> = {
 	Frag: string?,
 	Vert: string?,
 	Text: string?,
+	Font: string?,
 
-	InitCommand: (string | ((self: T) -> ()))?,
-	OnCommand: (string | ((self: T) -> ()))?,
+	InitCommand: (string | ((self: Types.ActorFrame) -> ()))?,
+	OnCommand: (string | ((self: Types.ActorFrame) -> ()))?,
+
+	[string]: any,
+}
+type constructorProps_ActorScroller = {
+	Name: string?,
+	Children: { class<any> }?,
+
+	File: string?,
+	Texture: string?,
+	Frag: string?,
+	Vert: string?,
+	Text: string?,
+	Font: string?,
+
+	InitCommand: (string | ((self: Types.ActorScroller) -> ()))?,
+	OnCommand: (string | ((self: Types.ActorScroller) -> ()))?,
+
+	UseScroller: number?,
+	SecondsPerItem: number?,
+	NumItemsToDraw: number?,
+	ItemPaddingStart: number?,
+	ItemPaddingEnd: number?,
+	TransformFunction: ((self: Types.Actor, offset: number, itemIndex: number, numItems: number) -> ())?,
 
 	[string]: any,
 }
 type innerConstructor<T> = (props: constructorProps<T>) -> class<T>
+type innerConstructor_ActorFrame = (props: constructorProps_ActorFrame) -> class<Types.ActorFrame>
+type innerConstructor_ActorScroller = (props: constructorProps_ActorScroller) -> class<Types.ActorScroller>
 type constructor =
 	((class: "Actor") -> innerConstructor<Types.Actor>)
-	& ((class: "ActorFrame") -> innerConstructor<Types.ActorFrame>)
+	& ((class: "ActorFrame") -> innerConstructor_ActorFrame)
 	& ((class: "ActorFrameTexture") -> innerConstructor<Types.ActorFrameTexture>)
 	& ((class: "ActorProxy") -> innerConstructor<Types.ActorProxy>)
-	& ((class: "ActorScroller") -> innerConstructor<Types.ActorScroller>)
+	& ((class: "ActorScroller") -> innerConstructor_ActorScroller)
 	& ((class: "ActorSound") -> innerConstructor<Types.ActorSound>)
 	& ((class: "BitmapText") -> innerConstructor<Types.BitmapText>)
 	& ((class: "Model") -> innerConstructor<Types.Model>)
@@ -51,39 +92,48 @@ local resolvePathsFor = { "File", "Texture", "Font" }
 local resolvePathsFor2 = { "Frag", "Vert" } -- shaders handle paths differently for some reason...
 local rootPath = string.rep("../", #string.split(_G.resolveLuaPath(""), "/")) -- this line is terrible, but it's for the reason above
 
+local childrenTypes = { "ActorFrame", "ActorScroller" }
+local actorScrollerCache =
+	{ function(self: Types.Actor, offset: number, _itemIndex, _numItems) self:x(offset * 256) end }
+
 local function _constructor(class: string)
-	if _G.templateReady then error("Cannot call createActor after the song has loaded") end
-	if not _G.CREATE_ACTORS_IN_LUA then error("Cannot call createActor because CREATE_ACTORS_IN_LUA is disabled") end
-	if _G.isLoadingUserMods then error("Cannot call createActor because the template has already initialized") end
+	if _G.templateReady then error("Cannot call createActor after the song has loaded", 2) end
+	if _G.isLoadingUserMods then error("Cannot call createActor because the template has already initialized", 2) end
 
 	return function<T>(props: constructorProps<T>)
 		local thisClass = {} :: any
 		thisClass.__className = class
 
 		function thisClass:appendChild<C>(child: any)
-			if class ~= "ActorFrame" or not thisClass.__children then
-				error(`Cannot append child "{child.__className}" to class of type "{class}"`)
+			if table.find(childrenTypes, class) == nil or not thisClass.__children then
+				error(`Cannot append child "{child.__className}" to class of type "{class}"`, 2)
 			end
 
 			removeChildFromTable(child)
 			table.insert(thisClass.__children, child)
+			return child
 		end
 		if props.Children then
-			if class == "ActorFrame" then
+			if table.find(childrenTypes, class) then
 				if not thisClass.__children then thisClass.__children = {} end
 				for _, child in ipairs(props.Children) do
 					thisClass:appendChild(child)
 				end
 			else
-				error(`Class "{class}" cannot have any children since it's not an ActorFrame`)
+				error(`Class "{class}" cannot have any children since it's not an ActorFrame`, 2)
 			end
 		end
-		if class == "ActorFrame" then thisClass.__children = thisClass.__children or {} end
+		if table.find(childrenTypes, class) then thisClass.__children = thisClass.__children or {} end
 
 		for i, v in pairs(props) do
 			if i ~= "className" and i ~= "__className" then thisClass[i] = v end
 			if table.find(resolvePathsFor, i) then thisClass[i] = _G.resolveLuaPath(v, 3) end
 			if table.find(resolvePathsFor2, i) then thisClass[i] = rootPath .. _G.resolveLuaPath(v, 3) end
+			if i == "TransformFunction" then
+				local thisId = #actorScrollerCache + 1
+				actorScrollerCache[thisId] = v
+				thisClass[i] = thisId
+			end
 		end
 
 		table.insert(exports.__classes, thisClass)
@@ -92,6 +142,11 @@ local function _constructor(class: string)
 end
 
 exports.createActor = (_constructor :: any) :: constructor
+
+local pluginActor = exports.createActor "ActorFrame" {}
+function exports.createPluginActor(props: constructorProps<Types.Actor>)
+	return pluginActor:appendChild(exports.createActor "Actor"(props))
+end
 
 -- time for internal stuff --
 -- credits to: https://github.com/ArcticFqx/nitg-theme/blob/master/Lua/geno.lua !
@@ -105,6 +160,7 @@ local function getDepth(t)
 end
 
 type layer_schema = {
+	parent: class<any>,
 	classes: { class<any> },
 	depth: number,
 	width: number,
@@ -123,6 +179,7 @@ function stackMetatable:getTop() return self[#self] end
 function stackMetatable:newLayer(classes: any)
 	if not classes.__children then return end
 	self:push({
+		parent = classes,
 		classes = classes.__children,
 		depth = getDepth(classes.__children),
 		width = #classes.__children,
@@ -151,7 +208,9 @@ function exports.__getType()
 
 	thisLayer.index += 1
 	local thisClass = thisLayer.classes[thisLayer.index]
-	if thisClass.__className == "ActorFrame" and (thisClass.__children and #thisClass.__children > 0) then return end
+	if table.find(childrenTypes, thisClass.__className) and (thisClass.__children and #thisClass.__children > 0) then
+		return
+	end
 	if thisClass.Frag or thisClass.Vert or thisClass.Text or thisClass.Font then return end
 
 	return thisClass.__className
@@ -165,9 +224,9 @@ function exports.__getFile(): string?
 	end
 
 	local thisClass = thisLayer.classes[thisLayer.index]
-	if thisClass.__className == "ActorFrame" and (thisClass.__children and #thisClass.__children > 0) then
+	if table.find(childrenTypes, thisClass.__className) and (thisClass.__children and #thisClass.__children > 0) then
 		currentStack:newLayer(thisClass)
-		return "actors.xml"
+		return thisClass.__className == "ActorFrame" and "actors.xml" or "actorScroller.xml"
 	end
 
 	if thisClass.Frag or thisClass.Vert then return "shader.xml" end
@@ -177,21 +236,32 @@ end
 local propertyDefaults = {
 	Frag = "nop.frag",
 	Vert = "nop.vert",
+
+	UseScroller = 1,
+	SecondsPerItem = 0,
+	NumItemsToDraw = 999,
+	ItemPaddingStart = 0,
+	ItemPaddingEnd = 0,
 }
-function exports.__getProperty(property: string): any
-	local thisLayer: layer_schema = currentStack:getTop()
+function exports.__getProperty(property: string, useLayerBefore: boolean?): any
+	local thisLayer: layer_schema = useLayerBefore and currentStack[#currentStack - 1] or currentStack:getTop()
 	local thisClass = thisLayer.classes[thisLayer.index] :: any
-	if property == "Font" and thisClass.__className == "BitmapText" then return thisClass[property] or "common" end -- only return a fallback if it's a BitmapText
+	if property == "Font" and thisClass.__className == "BitmapText" then -- only return a fallback if it's a BitmapText
+		return thisClass[property] or "Common Normal"
+	end
+	if property == "TransformFunction" then
+		return actorScrollerCache[thisClass[property] or 1] or actorScrollerCache[1]
+	end
 
 	return thisClass[property] or propertyDefaults[property]
 end
 
 local function useCommand(actor, command: (string | (...any) -> ...any)?)
-	return function()
+	return function(...: any)
 		if type(command) == "string" then
 			actor:cmd(command)
 		elseif type(command) == "function" then
-			command(actor)
+			command(actor, ...)
 		end
 	end
 end
@@ -212,6 +282,7 @@ function exports.__onInit(actor: any)
 		if thisClass.Text then actor:settext(thisClass.Text) end
 
 		setmetatable(thisClass :: any, {
+			__tostring = function() return `[LUA-ACTOR]: {actor}` end,
 			__index = function(self, prop)
 				local actorProp = actor[prop]
 				if type(actorProp) == "function" then -- allow actor functions to be accessed

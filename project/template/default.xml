@@ -17,7 +17,7 @@
 			local template = require('init')
 			template:Init(self, function()
 				--> this function will run once the template is ready. it will require the user's scripts
-				if template.Globals.CREATE_ACTORS_IN_LUA and mainScriptDidNotReturn then 
+				if mainScriptDidNotReturn then 
 					template.Functions.backToSongWheel('main.lua\u did not return a value.')
 					return
 				end
@@ -34,21 +34,17 @@
 		<!-- Load the User's actors -->
 		<Layer File = "../src/layout.xml"
 			Condition = "synn_env(function(self)
-				--> code below only runs if CREATE_ACTORS_IN_LUA is enabled !!
-				if definedGlobals.CREATE_ACTORS_IN_LUA then 
-					local mainScript = require(outputFolder .. '/src/main')
-					if not mainScript then 
-						synn_env.mainScriptDidNotReturn = true  
-						return false
-					end
-			
-					if type(mainScript) == 'table' and mainScript.initActors then
-						mainScript.initActors(self)
-					end
-
-					createActors.__init()
+				local mainScript = require(outputFolder .. '/src/main')
+				if not mainScript then 
+					synn_env.mainScriptDidNotReturn = true  
+					return false
 				end
-	
+			
+				if type(mainScript) == 'table' and mainScript.initActors then
+					mainScript.initActors(self)
+				end
+
+				createActors.__init()
 				return true
 			end)()" 
 		/>
