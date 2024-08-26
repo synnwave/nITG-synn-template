@@ -40,7 +40,7 @@ while task.wait(0.2) do
 	local canBuild = false
 	iterateDir("project", function(path)
 		local splitPath = path:split("/")
-		if splitPath[#splitPath] == "XMLTypeDefs.luau" then return end -- this gets regenerated every time we build so there's no point in watching it
+		if splitPath[#splitPath] == "ActorDefs.luau" then return end -- this gets regenerated every time we build so there's no point in watching it
 
 		local thisMetadata = fs.metadata(path)
 		if not thisMetadata.modifiedAt then return end

@@ -1,5 +1,6 @@
 
 .vscode
-project/template/types/XMLTypeDefs.luau
+**/XMLTypeDefs.luau
+**/ActorDefs.luau
 .DS_Store
 .build

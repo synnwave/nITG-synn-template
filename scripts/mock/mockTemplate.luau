@@ -6,7 +6,7 @@ return function(fullRefresh: boolean?)
 		local mock = { env = {} }
 		currentMock = mock
 
-		mock.env.synn_env = {
+		mock.env.synn = {
 			string = string,
 			table = table,
 			normalizePath = function(path: string)

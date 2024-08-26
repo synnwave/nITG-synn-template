@@ -14,7 +14,7 @@ function utils.require(filePath: string, path: string)
 	local lastPath = splitFilePath[#splitFilePath]
 	if lastPath then filePath = filePath:sub(1, -lastPath:len() - 1) end
 
-	local thisFilePath = template.env.synn_env.normalizePath(`{filePath}/{path}`)
+	local thisFilePath = template.env.synn.normalizePath(`{filePath}/{path}`)
 	if thisFilePath:sub(1, 1) == "/" then thisFilePath = thisFilePath:sub(2) end
 
 	local oldPath = thisFilePath

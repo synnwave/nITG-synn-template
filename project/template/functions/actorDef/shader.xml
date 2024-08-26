@@ -1,0 +1,9 @@
+<ActorFrame><children>
+    <Layer 
+        Type="@synn.actorDef.__getProperty('__className')" 
+        Frag="@synn.actorDef.__getProperty('Frag')" 
+        Vert="@synn.actorDef.__getProperty('Vert')"  
+        File="@synn.actorDef.__getProperty('File')"
+        Font="@synn.actorDef.__getProperty('Font')"
+    />
+</children></ActorFrame>

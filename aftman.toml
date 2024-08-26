@@ -3,4 +3,4 @@
 
 [tools]
 darklua = "seaofvoices/darklua@0.13.1"
-lune = "lune-org/lune@0.8.6"
+lune = "lune-org/lune@0.8.8"

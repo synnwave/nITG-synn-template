@@ -2,7 +2,7 @@
 local _T = require("../template")
 local _G, _F = _T.Globals, _T.Functions
 
--- hiddenregions.xml, made by oatmealine
+-- hiddenregions, made by oatmealine
 -- luau version made by synnwave
 
 export type region = {

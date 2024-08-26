@@ -4,9 +4,9 @@
 -- Luau version by @synnwave
 
 local Types = require("../template/types/TypeDefs")
-local XMLTypes = require("../template/types/XMLTypeDefs")
+local ActorDefs = require("../template/types/ActorDefs")
 local _T = require("../template")
-local _G, _F = _T.Globals, _T.Functions
+local _G, _F, _D = _T.Globals, _T.Functions, _T.Def
 
 type limitMetaProps = {
 	__actor: Types.ActorFrameTexture,
@@ -84,7 +84,7 @@ end
 
 --> Constructor
 local aftList = {}
-local function limitAFT(aft: Types.ActorFrameTexture? | XMLTypes.ActorFrameTexture_names): limitAft
+local function limitAFT(aft: Types.ActorFrameTexture? | ActorDefs.ActorFrameTexture_names): limitAft
 	local thisAft = _F.setupAFT(aft)
 	local this = setmetatable({} :: limitMetaProps, meta)
 	this.__actor = thisAft
@@ -99,8 +99,26 @@ local function limitAFT(aft: Types.ActorFrameTexture? | XMLTypes.ActorFrameTextu
 	return this :: any
 end
 
+local function limitAFTSprite(
+	aft: Types.ActorFrameTexture? | ActorDefs.ActorFrameTexture_names,
+	sprite: Types.Sprite? | ActorDefs.Sprite_names
+): (limitAft, Types.Sprite)
+	local thisAft, thisSprite = _F.setupAFTAndSprite(aft, sprite)
+	local this = setmetatable({} :: limitMetaProps, meta)
+	this.__actor = thisAft
+	this.__hidden = thisAft:GetHidden()
+	this.__autoUpdate = true
+	this.__fps = 60
+	this.__frameDelay = 1 / this.__fps
+	this.__frameUptime = 0
+	this.__frameWait = 1
+
+	table.insert(aftList, this)
+	return this :: any, thisSprite
+end
+
 --> Initialize Loop
-_F.createPluginActor {
+_D.Plugin {
 	InitCommand = function(self)
 		self:addcommand("update", function()
 			local deltaTime = self:GetEffectDelta()
@@ -126,4 +144,4 @@ _F.createPluginActor {
 	end,
 }
 
-return limitAFT
+return { limitAFT = limitAFT, limitAFTSprite = limitAFTSprite }

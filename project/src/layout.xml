@@ -1,7 +1,0 @@
-<Layer Type = "ActorFrame"><children>
-
-	<!-- Load Lua Actors -->
-	<!-- see: https://github.com/synnwave/nITG-synn-template/pull/1 -->
-	<Layer File = "../template/functions/createActors/actors.xml" />
-	
-</children></Layer>

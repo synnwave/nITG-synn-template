@@ -1,19 +1,17 @@
 <ActorFrame
 	InitCommand = "%function(self)
-        ROOT = GAMESTATE:GetCurrentSong():GetSongDir()
-        outputFolder = ROOT .. '.build/'
+		ROOT = GAMESTATE:GetCurrentSong():GetSongDir()
+		outputFolder = ROOT .. '.build/'
 		loadfile(outputFolder .. 'template/__xml-init')()(self)
 
 		--> now that initMain has been called, we can use string requires without having to concatenate the root path
-		synn_env()
-		foreground = self
-        synn_env.definedGlobals = require('globals')
-		synn_env.createActors = require('functions/createActors')
-    end"
+		synn:apply()
+		synn.actorDef = require('functions/actorDef')
+	end"
 >
 	<children>
 		<!-- Load the template onto an actor -->
-		<Layer InitCommand = "%synn_env(function(self)
+		<Layer InitCommand = "%synn:apply(function(self)
 			local template = require('init')
 			template:Init(self, function()
 				--> this function will run once the template is ready. it will require the user's scripts
@@ -29,14 +27,14 @@
 					mainScript()
 				end
 			end)
-        end)"/>
+		end)"/>
 
 		<!-- Load the User's actors -->
-		<Layer File = "../src/layout.xml"
-			Condition = "synn_env(function(self)
+		<Layer File = "functions/actorDef/actors.xml" Name = "Layout"
+			Condition = "synn:apply(function(self)
 				local mainScript = require(outputFolder .. '/src/main')
 				if not mainScript then 
-					synn_env.mainScriptDidNotReturn = true  
+					synn.mainScriptDidNotReturn = true  
 					return false
 				end
 			
@@ -44,7 +42,7 @@
 					mainScript.initActors(self)
 				end
 
-				createActors.__init()
+				actorDef.__init()
 				return true
 			end)()" 
 		/>

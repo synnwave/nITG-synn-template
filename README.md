@@ -23,11 +23,11 @@ Note: this template is not intended to be used by beginners or people who are no
 
 - Lua 5.1 Like variadics
 
-- XML Actors auto-completion
-
 - Auto-completion & type-checking for all of [nITG's Lua API](https://craftedcart.gitlab.io/notitg_docs/lua_api/index.html)
 
-- Create actors in Lua scripts (see [PR #1](https://github.com/synnwave/nITG-synn-template/pull/1))
+- Create actors in Lua scripts (see [PR #1](https://github.com/synnwave/nITG-synn-template/pull/1), no more stepmania XML bullcrap!)
+
+- Includes some useful plugins for writing modcharts
 
 ## Instructions
 
@@ -35,15 +35,17 @@ Note: this template is not intended to be used by beginners or people who are no
 
 2. Run the following every time before you playtest your mod file:
 
-```bash
-lune run scripts/build
-```
+    ```bash
+    lune run scripts/build
+    ```
 
-Or alternatively, you can watch the project so that it builds it each time you save a file:
+    Or alternatively, you can watch the project so that it builds it each time you save a file:
 
-```bash
-lune run scripts/watch
-```
+    ```bash
+    lune run scripts/watch
+    ```
+
+3. Go to `project/src/main.luau` and write your own mods there!
 
 ## Documentation
 

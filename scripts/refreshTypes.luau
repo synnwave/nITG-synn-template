@@ -3,67 +3,41 @@
 local fs = require("@lune/fs")
 local luau = require("@lune/luau")
 
-local outputDir = "project/template/types/XMLTypeDefs.luau"
-local fileDir = "project/src/layout.xml"
+local outputDir = "project/template/types/ActorDefs.luau"
 
 return function()
 	fs.writeFile(outputDir, "return nil") -- make temporary output file
-
-	--> Iterate through XML to get all actors, their names and types
 	local extractedTypes = { _all = {} }
-	if fs.isFile(fileDir) then
-		local file = fs.readFile(fileDir)
-		local handler = require("xml/xmlhandler/tree"):new()
-		require("xml/xml2lua").parser(handler):parse(file)
-
-		local function iterateXML(startingPoint)
-			for _, actorLayer in startingPoint do
-				if actorLayer[1] then
-					iterateXML(actorLayer)
-					continue
-				end
-				if actorLayer.children then iterateXML(actorLayer.children) end
-
-				local attributes = actorLayer._attr
-				if attributes and attributes.Name and attributes.Name ~= "" then
-					local thisType = attributes.Type or "Actor"
-					if not extractedTypes[thisType] then extractedTypes[thisType] = {} end
-
-					local thisActor = { name = attributes.Name, type = thisType }
-					table.insert(extractedTypes[thisType], thisActor)
-					table.insert(extractedTypes._all, thisActor)
-				end
-			end
-		end
-		iterateXML(handler.root)
-	end
 
 	do --> Capture Lua Actors
 		pcall(function()
 			local utils = require("mock/utilities")
 			utils.beginMock(true)
-			utils.cache["project/template/functions/createActors/init.luau"] = {
-				createActor = function(thisType: string)
-					thisType = thisType or "Sprite"
-					if thisType == "" or thisType == "Actor" then thisType = "Sprite" end -- just to be safe, make any "Actor" declarations a sprite instead
-					if not extractedTypes[thisType] then extractedTypes[thisType] = {} end
+			local function createActor(thisType: string)
+				thisType = thisType or "Sprite"
+				if thisType == "" or thisType == "Actor" then thisType = "Sprite" end -- just to be safe, make any "Actor" declarations a sprite instead
+				if not extractedTypes[thisType] then extractedTypes[thisType] = {} end
 
-					return function(props: { [any]: any })
-						if props.Name and props.Name ~= "" and props.Name ~= "_" then
-							local thisActor = { name = props.Name, type = thisType }
-							table.insert(extractedTypes[thisType], thisActor)
-							table.insert(extractedTypes._all, thisActor)
-						end
-
-						return setmetatable({}, {
-							__index = function()
-								return function(...) return ... end
-							end,
-						})
+				return function(props: { [any]: any })
+					if props.Name and props.Name ~= "" and props.Name ~= "_" then
+						local thisActor = { name = props.Name, type = thisType }
+						table.insert(extractedTypes[thisType], thisActor)
+						table.insert(extractedTypes._all, thisActor)
 					end
-				end,
+
+					return setmetatable({}, {
+						__index = function()
+							return function(...) return ... end
+						end,
+					})
+				end
+			end
+			utils.cache["project/template/functions/actorDef/init.luau"] = {
+				createActor = createActor,
+				Def = setmetatable({}, { __index = function(_, k) return createActor(k) end }),
 			}
 
+			createActor "ActorFrame" { Name = "Layout" }
 			local returned = utils.runScript("project/src/main.luau")
 			if typeof(returned) == "table" and returned.initActors then returned.initActors() end
 		end)
@@ -146,7 +120,7 @@ return function()
 			return `{final}{if newLine then "\n" else " "}}`
 		end
 
-		output ..= `\n\n-- this sucks\nexport type actorTable = typeof({dumpTableString(actorTable, true)})`
+		output ..= `\n\n\nexport type actorTable = typeof({dumpTableString(actorTable, true)})`
 	end
 
 	--> Finalize

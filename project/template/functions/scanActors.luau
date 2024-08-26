@@ -57,10 +57,7 @@ local function scanActors()
 	iter(_G.foreground, true)
 
 	actorTableProcessor ..= "\nend"
-	assert(loadstring(actorTableProcessor, "actor_processor"), "Actor processor failed to load")()(
-		allActors,
-		actorTable
-	)
+	assert(loadstring(actorTableProcessor, "actor_processor"), "Actor processor failed to load")()(allActors, actorTable)
 	clearMetatables()
 
 	local finalActorTable = {} :: any

@@ -6,7 +6,7 @@
 -- this is a mess...
 
 local T = require("types/TypeDefs")
-local XMLTypes = require("types/XMLTypeDefs")
+local ActorDefs = require("types/ActorDefs")
 
 local configuration
 pcall(function() configuration = require("../src/configuration") end)
@@ -16,15 +16,16 @@ local globals = {
 	foreground = foreground :: T.ActorFrame,
 	ROOT = ROOT :: string,
 	outputFolder = outputFolder :: string,
-	resolveLuaPath = resolveLuaPath :: (path: string, sourcePoint: number?) -> string,
+	resolveLuaPath = resolveLuaPath :: (path: string, sourcePoint: (number | string)?) -> string,
 	normalizePath = normalizePath :: (string) -> string,
 	clearRequireCache = clearRequireCache :: () -> (),
 
-	synn_env = synn_env :: { [any]: any },
+	synn = synn :: { [any]: any },
+	_G = _G,
 
 	--> Shared Template Variables
 	Players = {} :: { T.Player },
-	Actors = {} :: XMLTypes.actorTable,
+	Actors = {} :: ActorDefs.actorTable,
 	templateReady = false,
 	isLoadingUserMods = false,
 
@@ -261,8 +262,8 @@ local globals = {
 	TNS_PERFECT = TNS_PERFECT :: number,
 }
 
-setmetatable(globals, { __index = _G.synn_env or {} })
-if synn_env then
+setmetatable(globals, { __index = synn or {} })
+if synn then
 	globals.SCX = SCREEN_CENTER_X :: number
 	globals.SCY = SCREEN_CENTER_Y :: number
 	globals.SW = SCREEN_WIDTH :: number

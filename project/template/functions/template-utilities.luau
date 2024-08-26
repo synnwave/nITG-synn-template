@@ -1,7 +1,7 @@
 --!strict
 
 local Types = require("../types/TypeDefs")
-local XMLTypes = require("../types/XMLTypeDefs")
+local ActorDefs = require("../types/ActorDefs")
 local _G = require("../globals")
 
 local exports = {}
@@ -10,7 +10,7 @@ local assureCaller = _G.assureCaller
 
 do --> Utilities for setting up AFTs & Sprites
 	local setupCache: { [any]: boolean } = {}
-	function exports.setupAFT(aft: Types.ActorFrameTexture? | XMLTypes.ActorFrameTexture_names): Types.ActorFrameTexture
+	function exports.setupAFT(aft: Types.ActorFrameTexture? | ActorDefs.ActorFrameTexture_names): Types.ActorFrameTexture
 		local thisAFT: Types.ActorFrameTexture?
 		if type(aft) == "string" then
 			assureCaller("setupAFT")
@@ -19,9 +19,7 @@ do --> Utilities for setting up AFTs & Sprites
 			thisAFT = aft
 		end
 
-		if not thisAFT then
-			error(`[_F.setupAFT]: AFT{type(aft) == "string" and ` '{aft}' ` or " "}doesn't exist`, 2)
-		end
+		if not thisAFT then error(`[_F.setupAFT]: AFT{type(aft) == "string" and ` '{aft}' ` or " "}doesn't exist`, 2) end
 		if setupCache[thisAFT] then return thisAFT end
 
 		setupCache[thisAFT] = true
@@ -35,7 +33,7 @@ do --> Utilities for setting up AFTs & Sprites
 		return thisAFT
 	end
 
-	function exports.setupSprite(sprite: Types.Sprite? | XMLTypes.Sprite_names): Types.Sprite
+	function exports.setupSprite(sprite: Types.Sprite? | ActorDefs.Sprite_names): Types.Sprite
 		local thisSprite: Types.Sprite?
 		if type(sprite) == "string" then
 			assureCaller("setupSprite")
@@ -58,8 +56,8 @@ do --> Utilities for setting up AFTs & Sprites
 	end
 
 	function exports.setupAFTAndSprite(
-		aft: Types.ActorFrameTexture? | XMLTypes.ActorFrameTexture_names,
-		sprite: Types.Sprite? | XMLTypes.Sprite_names
+		aft: Types.ActorFrameTexture? | ActorDefs.ActorFrameTexture_names,
+		sprite: Types.Sprite? | ActorDefs.Sprite_names
 	): (Types.ActorFrameTexture, Types.Sprite)
 		local thisAFT = exports.setupAFT(aft)
 		local thisSprite = exports.setupSprite(sprite)
@@ -87,6 +85,20 @@ do --> Setup Utilities
 		end
 		_G.GAMESTATE:FinishSong()
 		_G.foreground:hidden(1)
+	end
+end
+
+do --> Mod Helpers
+	function exports.modTable(self: { string | number })
+		-- converts a mod table, from the old mirin format to the new format
+		-- modTable { 100, 'invert', 100, 'drunk' } -> { { value = 100, mod = 'invert' }, { value = 100, mod = 'drunk' } }
+		local res = {}
+		for i = 1, #self, 2 do
+			if type(self[i]) ~= "number" then error(`expected number, got {type(self[i])}, '{self[i]}'`) end
+			if type(self[i + 1]) ~= "string" then error(`expected string, got {type(self[i + 1])}, '{self[i + 1]}'`) end
+			table.insert(res, { value = self[i] :: number, mod = self[i + 1] :: string })
+		end
+		return res
 	end
 end
 

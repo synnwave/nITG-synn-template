@@ -2,27 +2,24 @@
 local _G = require("globals")
 
 local Types = require("types/TypeDefs")
-local XMLTypes = require("types/XMLTypeDefs")
+local ActorDefs = require("types/ActorDefs")
 
 local easing = require("functions/easings")
 local template = require("functions/template-exports")
 local templateUtilities = require("functions/template-utilities")
 local mergeTable = require("functions/mergeTable")
-local createActors = require("functions/createActors")
+local actorDef = require("functions/actorDef")
 
 local _T = {
 	_initialized = false,
 	_isReady = false,
 
-	Actors = {} :: XMLTypes.actorTable,
+	Actors = {} :: ActorDefs.actorTable,
 	Players = {} :: { Types.Player },
-	Functions = mergeTable(
-		template.exports,
-		templateUtilities,
-		{ createActor = createActors.createActor, createPluginActor = createActors.createPluginActor }
-	),
+	Functions = mergeTable(template.exports, templateUtilities, { createActor = actorDef.createActor }),
 	Easings = easing,
 	Globals = _G,
+	Def = actorDef.Def,
 }
 
 function _T:Init(initActor: Types.Actor, onReady: () -> ())

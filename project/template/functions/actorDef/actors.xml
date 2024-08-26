@@ -1,0 +1,16 @@
+<ActorFrame>
+    <children>
+        <Layer Condition="synn.actorDef.__condition()" Type="@synn.actorDef.__getType()" File="@synn.actorDef.__getFile()" Font="@synn.actorDef.__getProperty('Font')" InitCommand="%synn.actorDef.__onInit" />
+        <Layer Condition="synn.actorDef.__condition()" Type="@synn.actorDef.__getType()" File="@synn.actorDef.__getFile()" Font="@synn.actorDef.__getProperty('Font')" InitCommand="%synn.actorDef.__onInit" />
+        <Layer Condition="synn.actorDef.__condition()" Type="@synn.actorDef.__getType()" File="@synn.actorDef.__getFile()" Font="@synn.actorDef.__getProperty('Font')" InitCommand="%synn.actorDef.__onInit" />
+        <Layer Condition="synn.actorDef.__condition()" Type="@synn.actorDef.__getType()" File="@synn.actorDef.__getFile()" Font="@synn.actorDef.__getProperty('Font')" InitCommand="%synn.actorDef.__onInit" />
+        <Layer Condition="synn.actorDef.__condition()" Type="@synn.actorDef.__getType()" File="@synn.actorDef.__getFile()" Font="@synn.actorDef.__getProperty('Font')" InitCommand="%synn.actorDef.__onInit" />
+        <Layer Condition="synn.actorDef.__condition()" Type="@synn.actorDef.__getType()" File="@synn.actorDef.__getFile()" Font="@synn.actorDef.__getProperty('Font')" InitCommand="%synn.actorDef.__onInit" />
+        <Layer Condition="synn.actorDef.__condition()" Type="@synn.actorDef.__getType()" File="@synn.actorDef.__getFile()" Font="@synn.actorDef.__getProperty('Font')" InitCommand="%synn.actorDef.__onInit" />
+        <Layer Condition="synn.actorDef.__condition()" Type="@synn.actorDef.__getType()" File="@synn.actorDef.__getFile()" Font="@synn.actorDef.__getProperty('Font')" InitCommand="%synn.actorDef.__onInit" />
+        <Layer Condition="synn.actorDef.__condition()" Type="@synn.actorDef.__getType()" File="@synn.actorDef.__getFile()" Font="@synn.actorDef.__getProperty('Font')" InitCommand="%synn.actorDef.__onInit" />
+        <Layer Condition="synn.actorDef.__condition()" Type="@synn.actorDef.__getType()" File="@synn.actorDef.__getFile()" Font="@synn.actorDef.__getProperty('Font')" InitCommand="%synn.actorDef.__onInit" />
+
+        <Layer Condition="synn.actorDef.__canContinue()" File="actors.xml" />
+    </children>
+</ActorFrame>

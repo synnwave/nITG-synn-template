@@ -34,14 +34,14 @@ do --> "easeMod", "setMod", "resetMod"
 		beat: number,
 		length: number?,
 		easing: (_E.allEasings | _E.easingType)?,
-		mod: { percent: number, mod: Types.mods } | { { percent: number, mod: Types.mods } },
+		mod: { value: number, mod: Types.mods } | { { value: number, mod: Types.mods } },
 		player: (number | { number })?,
 
-		relativePercent: boolean?, -- "relativePercent" and "add" are the same thing, add is only here as a shorthand
+		relativeValue: boolean?, -- "relativeValue" and "add" are the same thing, add is only here as a shorthand
 		add: boolean?, -- "add" & "acc" from the mirin template don't exist here, use this value instead (add = easeMod, acc = setMod)
 
 		endMode: boolean?,
-		time: boolean?,
+		timeBased: boolean?,
 
 		__reset: boolean?,
 		__only: { string }?,
@@ -53,10 +53,10 @@ do --> "easeMod", "setMod", "resetMod"
 		startTime: number,
 		easing: (number) -> number,
 		player: number,
-		mod: { { percent: number, mod: Types.mods } },
+		mod: { { value: number, mod: Types.mods } },
 
 		endMode: boolean?,
-		time: boolean?,
+		timeBased: boolean?,
 
 		only: { string }?,
 		exclude: { [string]: boolean }?,
@@ -77,10 +77,10 @@ do --> "easeMod", "setMod", "resetMod"
 			easing = _E.getEasing(props.easing),
 
 			endMode = props.endMode,
-			time = props.time,
+			timeBased = props.timeBased,
 			player = props.player,
 
-			relative = props.add or props.relativePercent,
+			relative = props.add or props.relativeValue,
 			reset = props.__reset,
 			only = props.__only,
 			exclude = props.__exclude,
@@ -89,7 +89,7 @@ do --> "easeMod", "setMod", "resetMod"
 		if props.endMode then
 			thisEase.length -= thisEase.beat
 		end
-		thisEase.startTime = props.time and props.beat or thisSong:GetElapsedTimeFromBeat(props.beat)
+		thisEase.startTime = props.timeBased and props.beat or thisSong:GetElapsedTimeFromBeat(props.beat)
 
 		if type(props.mod) == "table" and (props.mod :: any)[1] == nil then
 			thisEase.mod = { props.mod :: any }
@@ -155,7 +155,7 @@ do --> "easeMod", "setMod", "resetMod"
 	end
 end
 
-do --> "bindFunction", "bindToFrame", "easeFunction"
+do --> "bindFunction", "bindToUpdate", "easeFunction"
 	--> bindFunction
 	type boundFunction = (beat: number, time: number, deltaTime: number, poptions: { { [string]: number } }) -> ()
 	type bindFunction_props = {
@@ -164,14 +164,14 @@ do --> "bindFunction", "bindToFrame", "easeFunction"
 		persist: (boolean | number)?,
 
 		defer: boolean?,
-		time: boolean?,
+		timeBased: boolean?,
 		endMode: boolean?,
 	}
 	type INTERNAL_bindFunction = {
 		beat: number,
 		method: boundFunction,
 
-		time: boolean?,
+		timeBased: boolean?,
 		startTime: number,
 		priority: number,
 
@@ -187,7 +187,7 @@ do --> "bindFunction", "bindToFrame", "easeFunction"
 		local thisFunction = {
 			beat = props.beat or 0,
 			method = props.method,
-			time = props.time,
+			timeBased = props.timeBased,
 		} :: INTERNAL_bindFunction
 
 		local thisPersist
@@ -205,14 +205,14 @@ do --> "bindFunction", "bindToFrame", "easeFunction"
 		end
 
 		thisFunction.priority = (props.defer and -1 or 1) * (#internals.__functions + 1)
-		thisFunction.startTime = props.time and props.beat or thisSong:GetElapsedTimeFromBeat(thisFunction.beat)
+		thisFunction.startTime = props.timeBased and props.beat or thisSong:GetElapsedTimeFromBeat(thisFunction.beat)
 		table.insert(internals.__functions, thisFunction)
 
 		return exports.bindFunction
 	end
 
-	--> bindToFrame
-	type bindToFrame_props = {
+	--> bindToUpdate
+	type bindToUpdate_props = {
 		length: number?,
 
 		beat: number?,
@@ -220,14 +220,14 @@ do --> "bindFunction", "bindToFrame", "easeFunction"
 		persist: (boolean | number)?,
 
 		defer: boolean?,
-		time: boolean?,
+		timeBased: boolean?,
 		endMode: boolean?,
 	}
 	local preventPoptions: any = setmetatable({}, {
 		__index = function() error("you cannot use poptions and persist at the same time. </3", 2) end,
 	})
-	function exports.bindToFrame(props: bindToFrame_props, noPoptions: boolean?)
-		assureCaller("bindToFrame", false, true)
+	function exports.bindToUpdate(props: bindToUpdate_props, noPoptions: boolean?)
+		assureCaller("bindToUpdate", false, true)
 
 		local thisFunction = {
 			beat = props.beat or 0,
@@ -247,7 +247,7 @@ do --> "bindFunction", "bindToFrame", "easeFunction"
 		end
 
 		thisFunction.priority = (props.defer and -1 or 1) * (#internals.__functions + 1)
-		thisFunction.startTime = props.time and thisFunction.beat or thisSong:GetElapsedTimeFromBeat(thisFunction.beat)
+		thisFunction.startTime = props.timeBased and thisFunction.beat or thisSong:GetElapsedTimeFromBeat(thisFunction.beat)
 		local thisPersist = props.persist
 		if thisPersist then
 			if type(thisPersist) == "number" and props.endMode then
@@ -263,22 +263,22 @@ do --> "bindFunction", "bindToFrame", "easeFunction"
 
 		table.insert(internals.__functions, thisFunction)
 
-		return exports.bindToFrame
+		return exports.bindToUpdate
 	end
 
 	--> easeFunction
 	type easeFunction_props = {
 		length: number?,
 		beat: number?,
-		method: (percent: number) -> (),
+		method: (value: number) -> (),
 		persist: (boolean | number)?,
 
 		defer: boolean?,
-		time: boolean?,
+		timeBased: boolean?,
 		endMode: boolean?,
 
-		startPercent: number?,
-		targetPercent: number?,
+		startValue: number?,
+		targetValue: number?,
 		easing: (_E.allEasings | _E.easingType)?,
 	}
 	function exports.easeFunction(props: easeFunction_props)
@@ -287,31 +287,32 @@ do --> "bindFunction", "bindToFrame", "easeFunction"
 		local thisFunction = {
 			beat = props.beat or 0,
 			length = props.length or 0,
+			timeBased = props.timeBased,
 			persist = false,
 		}
 
-		local startPercent = props.startPercent or 0
-		local targetPercent = props.targetPercent or 1
+		local startValue = props.startValue or 0
+		local targetValue = props.targetValue or 1
 		local easing = _E.getEasing(props.easing) :: (number) -> number
-		thisFunction.method = function(beat: number)
+		function thisFunction.method(beat: number)
 			local progress = (beat - thisFunction.beat) / thisFunction.length
-			props.method(startPercent + (targetPercent - startPercent) * easing(progress))
+			props.method(startValue + (targetValue - startValue) * easing(progress))
 		end
 
 		if props.endMode then
 			thisFunction.length -= thisFunction.beat
 		end
 		if props.persist ~= false then
-			local finalPercent = easing(1) > 0.5 and targetPercent or startPercent
+			local finalValue = easing(1) > 0.5 and targetValue or startValue
 			exports.bindFunction {
 				beat = thisFunction.beat + thisFunction.length,
-				method = function() props.method(finalPercent) end,
+				method = function() props.method(finalValue) end,
 				persist = props.persist,
 				defer = props.defer,
 			}
 		end
 
-		exports.bindToFrame(thisFunction, true)
+		exports.bindToUpdate(thisFunction, true)
 
 		return exports.easeFunction
 	end
@@ -334,19 +335,19 @@ do --> "setAlias", "setModDefault", "setAux", "makeNode", "defineMod"
 	})
 	do --> Hell. beware
 		type setModDefault_schema =
-			((percent: number, mod: Types.mods) -> setModDefault_schema)
-			& (({ percent: number, mod: Types.mods }) -> setModDefault_schema)
-			& (({ { percent: number, mod: Types.mods } }) -> setModDefault_schema)
+			((value: number, mod: Types.mods) -> setModDefault_schema)
+			& (({ value: number, mod: Types.mods }) -> setModDefault_schema)
+			& (({ { value: number, mod: Types.mods } }) -> setModDefault_schema)
 		local function __setModDefault(...: any)
 			assureCaller("setModDefault", false, true)
 			local arg1: any, arg2: any = ...
 
 			if type(arg1) == "table" then
-				if type(arg1.mod) == "string" and type(arg1.percent) == "number" then
-					internals.__defaultMods[string.lower(arg1.mod)] = arg1.percent
+				if type(arg1.mod) == "string" and type(arg1.value) == "number" then
+					internals.__defaultMods[string.lower(arg1.mod)] = arg1.value
 				else
 					for _, v in ipairs(arg1) do
-						internals.__defaultMods[string.lower(v.mod)] = v.percent
+						internals.__defaultMods[string.lower(v.mod)] = v.value
 					end
 				end
 			elseif type(arg1) == "number" and type(arg2) == "string" then
@@ -378,7 +379,7 @@ do --> "setAlias", "setModDefault", "setAux", "makeNode", "defineMod"
 	--> makeNode
 	internals.__nodes = {} :: { INTERNAL_makeNode }
 	type makeNode_props = {
-		inputMod: string | { string },
+		modName: string | { string },
 		outputMod: (string | { string })?,
 		method: (...number) -> ...number,
 
@@ -401,7 +402,7 @@ do --> "setAlias", "setModDefault", "setAux", "makeNode", "defineMod"
 		assureCaller("makeNode", false, true)
 
 		local thisNode = {
-			inputs = (type(props.inputMod) == "string" and { props.inputMod } or props.inputMod),
+			inputs = (type(props.modName) == "string" and { props.modName } or props.modName),
 			outputs = (type(props.outputMod) == "string" and { props.outputMod } or props.outputMod),
 			method = props.method,
 			priority = (props.defer and -1 or 1) * (#internals.__nodes + 1),
@@ -424,15 +425,15 @@ do --> "setAlias", "setModDefault", "setAux", "makeNode", "defineMod"
 		assureCaller("defineMod", false, true)
 
 		local thisMod: makeNode_props = {
-			inputMod = props.modName,
+			modName = props.modName,
 			outputMod = props.outputMod or {},
 			method = props.method,
 			defer = props.defer,
 		}
-		thisMod.inputMod = type(thisMod.inputMod) == "string" and { thisMod.inputMod } or thisMod.inputMod
+		thisMod.modName = type(thisMod.modName) == "string" and { thisMod.modName } or thisMod.modName
 		thisMod.outputMod = type(thisMod.outputMod) == "string" and { thisMod.outputMod } or thisMod.outputMod
-		if type(thisMod.inputMod) == "table" then
-			for _, modName in ipairs(thisMod.inputMod) do
+		if type(thisMod.modName) == "table" then
+			for _, modName in ipairs(thisMod.modName) do
 				exports.setAux(modName)
 			end
 		end
@@ -618,9 +619,9 @@ do --> Runtime
 		--> Default mods
 		local clonedDefaults = table.clone(internals.__defaultMods)
 		table.clear(internals.__defaultMods :: any) -- stupid metatable
-		for mod, percent in pairs(clonedDefaults) do
+		for mod, value in pairs(clonedDefaults) do
 			local normalized = safeNormalizeModName(mod)
-			internals.__defaultMods[normalized] = percent
+			internals.__defaultMods[normalized] = value
 			for playerId = 1, _G.PLAYER_COUNT do
 				touchedMods[playerId][normalized] = true
 			end
@@ -754,22 +755,19 @@ do --> Runtime
 		--> Get & Setup active eases
 		while easesIndex <= #internals.__eases do
 			local ease = internals.__eases[easesIndex]
-			local measure = ease.time and time or beat
+			local measure = ease.timeBased and time or beat
 			if measure < ease.beat then break end
 
 			local player = ease.player
 			if ease.reset then
 				if ease.only then
 					for _, mod in ipairs(ease.only) do
-						table.insert(ease.mod, { mod = mod, percent = internals.__defaultMods[mod] })
+						table.insert(ease.mod, { mod = mod, value = internals.__defaultMods[mod] })
 					end
 				else
 					for mod in pairs(modTargets[player]) do
-						if
-							not (ease.exclude and ease.exclude[mod])
-							and modTargets[player][mod] ~= internals.__defaultMods[mod]
-						then
-							table.insert(ease.mod, { mod = mod, percent = internals.__defaultMods[mod] })
+						if not (ease.exclude and ease.exclude[mod]) and modTargets[player][mod] ~= internals.__defaultMods[mod] then
+							table.insert(ease.mod, { mod = mod, value = internals.__defaultMods[mod] })
 						end
 					end
 				end
@@ -780,12 +778,10 @@ do --> Runtime
 
 			for _, mod in ipairs(ease.mod) do
 				if not ease.relative then
-					mod.percent -= modTargets[player][mod.mod]
+					mod.value -= modTargets[player][mod.mod]
 				end
 
-				if easeEndsAtDifferentPosition then
-					modTargets[player][mod.mod] = modTargets[player][mod.mod] + mod.percent
-				end
+				if easeEndsAtDifferentPosition then modTargets[player][mod.mod] = modTargets[player][mod.mod] + mod.value end
 			end
 
 			table.insert(activeEases, ease)
@@ -797,12 +793,12 @@ do --> Runtime
 		while activeEasesIndex <= #activeEases do
 			local ease = activeEases[activeEasesIndex]
 			local player = ease.player
-			local measure = ease.time and time or beat
+			local measure = ease.timeBased and time or beat
 
 			if measure < ease.beat + ease.length then
 				local eased = ease.easing((measure - ease.beat) / ease.length) - ease.offset
 				for _, mod in ipairs(ease.mod) do
-					modValues[player][mod.mod] = modValues[player][mod.mod] + eased * mod.percent
+					modValues[player][mod.mod] = modValues[player][mod.mod] + eased * mod.value
 				end
 
 				activeEasesIndex += 1
@@ -827,12 +823,12 @@ do --> Runtime
 		return (priorityA * priorityA * priorityB) < (priorityA * priorityB * priorityB)
 	end)
 	local preventBindFunctionPoptions: any = setmetatable({}, {
-		__index = function() error("you cannot use poptions on bindFunction", 2) end, -- because bindToFrame shares the same type as bindFunction
+		__index = function() error("you cannot use poptions on bindFunction", 2) end, -- because bindToUpdate shares the same type as bindFunction
 	})
 	local function runFunctions(beat: number, time: number, deltaTime: number)
 		while functionsIndex <= #internals.__functions do
 			local func = internals.__functions[functionsIndex]
-			local measure = func.time and time or beat
+			local measure = func.timeBased and time or beat
 			if measure < func.beat then break end
 
 			if not func.length then
@@ -849,7 +845,7 @@ do --> Runtime
 			local func = activeFunctions:next()
 			if not func then break end
 
-			local measure = func.time and time or beat
+			local measure = func.timeBased and time or beat
 			if func.length and measure < func.beat + func.length then
 				poptionsLoggingTarget = func.mods :: any
 				func.method(measure, time, deltaTime, poptions)
@@ -938,8 +934,8 @@ do --> Runtime
 			local thisPlayer = _G.Players[playerId]
 			if thisPlayer and thisPlayer:IsAwake() then
 				local thisBuffer = modStringBuffer[playerId]
-				for mod, percent in pairs(modValues[playerId]) do
-					if not internals.__auxes[mod] then table.insert(thisBuffer, `*-1 {percent} {mod}`) end
+				for mod, value in pairs(modValues[playerId]) do
+					if not internals.__auxes[mod] then table.insert(thisBuffer, `*-1 {value} {mod}`) end
 					modValues[playerId][mod] = nil
 				end
 
@@ -982,7 +978,7 @@ do --> Setup mods
 	--> zoom, zoomx, zoomy
 	exports.setAux "zoom"
 	exports.makeNode {
-		inputMod = { "zoom", "zoomx", "zoomy" },
+		modName = { "zoom", "zoomx", "zoomy" },
 		method = function(zoom, x, y)
 			local mod = zoom * 0.01
 			return x * mod, y * mod
@@ -991,12 +987,11 @@ do --> Setup mods
 		defer = true,
 	}
 	exports.setModDefault {
-		{ percent = 100, mod = "zoom" },
-		{ percent = 100, mod = "zoomx" },
-		{ percent = 100, mod = "zoomy" },
-		{ percent = 100, mod = "zoomz" },
-
-		{ percent = 400, mod = "grain" },
+		{ value = 100, mod = "zoom" },
+		{ value = 100, mod = "zoomx" },
+		{ value = 100, mod = "zoomy" },
+		{ value = 100, mod = "zoomz" },
+		{ value = 400, mod = "grain" },
 	}
 
 	--> movex, movey, movez
@@ -1016,7 +1011,7 @@ do --> Setup mods
 	end
 
 	--> xmod, cmod
-	exports.setModDefault { { percent = 1, mod = "xmod" } }
+	exports.setModDefault { { value = 1, mod = "xmod" } }
 	exports.defineMod {
 		modName = { "xmod", "cmod" },
 		method = function(xmod, cmod, playerId)

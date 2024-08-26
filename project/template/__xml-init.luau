@@ -20,7 +20,8 @@ return function(self: ActorFrame)
 	end
 
 	--> Make environment
-	synn_env = {
+	synn = {
+		foreground = self,
 		math = cloneTable(_G.math),
 		table = cloneTable(_G.table),
 		string = cloneTable(_G.string),
@@ -31,39 +32,45 @@ return function(self: ActorFrame)
 		unpack = _G.unpack,
 		tonumber = _G.tonumber,
 		tostring = _G.tostring,
+		setmetatable = _G.setmetatable,
+		rawget = _G.rawget,
+		rawset = _G.rawset,
 	}
-	synn_env.synn_env = _G.synn_env -- lol
-	setmetatable(synn_env, {
-		__index = _G,
-		__call = function(env, fenv)
+	synn.synn = _G.synn -- lol
+
+	local definedGlobals
+	local metamethods = {
+		apply = function(env, fenv)
 			setfenv(fenv or 2, env)
 			return fenv
 		end,
+	}
+	setmetatable(synn, {
+		__index = function(_, k) return metamethods[k] or _G[k] or synn.rawget(definedGlobals or {}, k) end,
+		__call = metamethods.apply,
 	})
 
 	do --> Library backports (from lua 5.1 to 5.0)
 		--> global backports
-		function synn_env.select(index, ...: any)
+		function synn.select(index, ...: any)
 			local items = arg.n or #arg
 			if index == "#" then
 				return items
 			else
 				local result = {}
 				for i = index, items do
-					synn_env.table.insert(result, arg[i])
+					synn.table.insert(result, arg[i])
 				end
 				return unpack(result)
 			end
 		end
 
 		--> "string" library backports
-		synn_env.string.gmatch = string.gmatch or string.gfind
-		synn_env.string.match = string.match
+		synn.string.gmatch = string.gmatch or string.gfind
+		synn.string.match = string.match
 			or function(s: string, pattern: string, init: number?)
-				local first, last = synn_env.string.find(s, pattern, init or 1)
-				if first then
-					return unpack({ synn_env.string.gmatch(synn_env.string.sub(s, first, last), pattern)() })
-				end
+				local first, last = synn.string.find(s, pattern, init or 1)
+				if first then return synn.string.gmatch(synn.string.sub(s, first, last), pattern)() end
 			end
 
 		-- https://stackoverflow.com/a/43582076
@@ -71,27 +78,27 @@ return function(self: ActorFrame)
 			local splitStart, length = 1, #text
 			return function()
 				if splitStart then
-					local sepStart, sepEnd = synn_env.string.find(text, pattern, splitStart, plain)
+					local sepStart, sepEnd = synn.string.find(text, pattern, splitStart, plain)
 					local ret
 					if not sepStart then
-						ret = synn_env.string.sub(text, splitStart)
+						ret = synn.string.sub(text, splitStart)
 						splitStart = nil
 					elseif sepEnd < sepStart then
-						ret = synn_env.string.sub(text, splitStart, sepStart)
+						ret = synn.string.sub(text, splitStart, sepStart)
 						if sepStart < length then
 							splitStart = sepStart + 1
 						else
 							splitStart = nil
 						end
 					else
-						ret = sepStart > splitStart and synn_env.string.sub(text, splitStart, sepStart - 1) or ""
+						ret = sepStart > splitStart and synn.string.sub(text, splitStart, sepStart - 1) or ""
 						splitStart = sepEnd + 1
 					end
 					return ret
 				end
 			end
 		end
-		synn_env.string.split = string.split
+		synn.string.split = string.split
 			or function(s: string, separator: string?, plain: boolean?)
 				separator = separator or ""
 				local t = {}
@@ -102,29 +109,29 @@ return function(self: ActorFrame)
 			end
 
 		--> "math" library backports
-		synn_env.math.clamp = math.clamp or function(n, min, max) return synn_env.math.min(math.max(n, min), max) end
-		synn_env.math.huge = math.huge or 9e9
-		synn_env.math.round = math.round
-			or function(x) return x > 0 and synn_env.math.floor(x + 0.5) or synn_env.math.ceil(x - 0.5) end
-		synn_env.math.modf = math.modf
+		synn.math.clamp = math.clamp or function(n, min, max) return synn.math.min(math.max(n, min), max) end
+		synn.math.huge = math.huge or 9e9
+		synn.math.round = math.round or function(x) return x > 0 and synn.math.floor(x + 0.5) or synn.math.ceil(x - 0.5) end
+		synn.math.modf = math.modf
 			or function(x)
-				local int = x >= 0 and synn_env.math.floor(x) or synn_env.math.ceil(x)
+				local int = x >= 0 and synn.math.floor(x) or synn.math.ceil(x)
 				return int, x - int
 			end
 
 		--> "table" library backports
-		synn_env.table.clone = table.clone or cloneTable
-		synn_env.table.clear = table.clear
+		synn.table.clone = table.clone or cloneTable
+		synn.table.clear = table.clear
 			or function(t)
-				for _ in ipairs(t) do
+				for _ = 1, #t do
 					table.remove(t)
 				end
 				for i in pairs(t) do
-					if i ~= "n" then t[i] = nil end
+					t[i] = nil
+					if i == "n" then t[i] = 0 end
 				end
 				return t
 			end
-		synn_env.table.find = table.find
+		synn.table.find = table.find
 			or function<V>(haystack: { V }, needle: V, init: number?)
 				for i, v in ipairs(haystack) do
 					if not (init and init > i) then
@@ -133,25 +140,25 @@ return function(self: ActorFrame)
 				end
 				return
 			end
-		synn_env.table.pack = table.pack or function(...: any) return { n = synn_env.select("#", ...), ... } end
-		synn_env.table.unpack = table.unpack
+		synn.table.pack = table.pack or function(...: any) return { n = synn.select("#", ...), ... } end
+		synn.table.unpack = table.unpack
 			or function(list, i, j)
 				i = i or 1
 				j = j or list.n or #list
 				if i > j then
 					return
 				else
-					return list[i], synn_env.table.unpack(list, i + 1, j)
+					return list[i], synn.table.unpack(list, i + 1, j)
 				end
 			end
 	end
 
 	self:removecommand("Init")
-	self:sleep(synn_env.math.huge) -- Needed by StepMania, in order to not kill lua mods early
+	self:sleep(synn.math.huge) -- Needed by StepMania, in order to not kill lua mods early
 
 	do --> Custom require function
-		local string, table = synn_env.string, synn_env.table
-		function synn_env.normalizePath(path: string)
+		local string, table = synn.string, synn.table
+		function synn.normalizePath(path: string)
 			local parts = {}
 			for part in string.gmatch(path, "[^/]+") do
 				if part == ".." then
@@ -164,8 +171,22 @@ return function(self: ActorFrame)
 			return `/{table.concat(parts, "/")}`
 		end
 
-		function synn_env.resolveLuaPath(path: string, sourcePoint: number?)
-			local source = debug.getinfo(sourcePoint or 2, "S").source
+		function synn.resolveLuaPath(path: string, sourcePoint: (number | string)?)
+			local source
+			if type(sourcePoint) == "string" then
+				source = sourcePoint
+			else
+				local level = sourcePoint or 2
+				local info
+				repeat
+					info = debug.getinfo(level, "S")
+					if info then
+						source = string.sub(info.source, 1, 1) == "@" and info.source
+						level += 1
+					end
+				until source or not info
+			end
+
 			if type(source) == "string" and string.sub(source, 1, 1) == "@" and string.sub(path, 1, 6) ~= "/Songs" then
 				source = string.sub(source, 2)
 				local filePath = string.split(source, "/")
@@ -174,18 +195,18 @@ return function(self: ActorFrame)
 				path = source .. path
 			end
 
-			path = synn_env.normalizePath(path)
+			path = synn.normalizePath(path)
 			if string.sub(path, -4) == ".lua" then path = string.sub(path, 1, -5) end
 
 			return path
 		end
 
 		local cache = {}
-		synn_env.require = function(path)
+		function synn.require(path)
 			if not cache then error("Cannot call require() after the song has loaded") end
 
 			local oldPath = path
-			path = synn_env.resolveLuaPath(path, 3)
+			path = synn.resolveLuaPath(path, 3)
 
 			local altPath = `{path}/init`
 			local thisRequire = cache[altPath] or cache[path]
@@ -199,7 +220,7 @@ return function(self: ActorFrame)
 
 				if not loaded then error(`[REQUIRE]: Could not require "{oldPath}", {loadError}`, 2) end
 				print(`[REQUIRE]: {path}`)
-				thisRequire = synn_env(loaded)()
+				thisRequire = synn:apply(loaded)()
 				cache[path] = thisRequire
 				cache[usedPath] = thisRequire
 			end
@@ -207,10 +228,12 @@ return function(self: ActorFrame)
 			return thisRequire
 		end
 
-		function synn_env.clearRequireCache() -- clear cache after LoadCommand
+		synn.definedGlobals = synn.require("globals")
+		definedGlobals = synn.definedGlobals
+		function synn.clearRequireCache() -- clear cache after LoadCommand
 			cache = nil :: any
 		end
 	end
 
-	synn_env()
+	synn:apply()
 end

@@ -1,15 +1,20 @@
 --!strict
 
 local _T = require("../template")
-local _G, _P, _F, _A, _E = _T.Globals, _T.Players, _T.Functions, _T.Actors, _T.Easings
+local _G, _P, _F, _A, _E, _D = _T.Globals, _T.Players, _T.Functions, _T.Actors, _T.Easings, _T.Def
 
 do --> Declare Actors here (if needed, see: https://github.com/synnwave/nITG-synn-template/pull/1)
-	--> Create actor proxies for the player, judgment & combo actors
-	for playerId = 1, 2 do
-		_F.createActor "ActorProxy" { Name = `PP[{playerId}]` } -- Player Proxy
-		_F.createActor "ActorProxy" { Name = `PJ[{playerId}]` } -- Player Judgment Proxy
-		_F.createActor "ActorProxy" { Name = `PC[{playerId}]` } -- Player Combo Proxy
+	for playerId = 1, 2 do --> Create actor proxies for the player, judgment & combo actors.
+		_D.ActorProxy { Name = `PP[{playerId}]` } -- Player Proxy
+		if playerId <= 2 then -- We only need to create combo & judgment proxies for players 1 and 2
+			_D.ActorProxy { Name = `PJ[{playerId}]` } -- Player Judgment Proxy
+			_D.ActorProxy { Name = `PC[{playerId}]` } -- Player Combo Proxy
+		end
 	end
+
+	--> Add more actors after this line!
+
+	---
 end
 
 return function()
@@ -42,7 +47,7 @@ return function()
 
 	-- Mod example:
 	_F.setModDefault {
-		{ percent = 3, mod = "xmod" },
-		{ percent = 100, mod = "confusion" },
+		{ value = 3, mod = "xmod" },
+		{ value = 100, mod = "confusion" },
 	}
 end
