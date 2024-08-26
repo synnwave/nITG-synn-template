@@ -3,6 +3,8 @@
 local Types = require("../types/TypeDefs")
 local ActorDefs = require("../types/ActorDefs")
 local _G = require("../globals")
+local _E = require("easings")
+local _F = require("template-exports").exports
 
 local exports = {}
 
@@ -91,14 +93,30 @@ end
 do --> Mod Helpers
 	function exports.modTable(self: { string | number })
 		-- converts a mod table, from the old mirin format to the new format
-		-- modTable { 100, 'invert', 100, 'drunk' } -> { { value = 100, mod = 'invert' }, { value = 100, mod = 'drunk' } }
+		-- modTable { 100, 'invert', 100, 'drunk' } -> { invert = 100, drunk = 100 }
 		local res = {}
 		for i = 1, #self, 2 do
 			if type(self[i]) ~= "number" then error(`expected number, got {type(self[i])}, '{self[i]}'`) end
 			if type(self[i + 1]) ~= "string" then error(`expected string, got {type(self[i + 1])}, '{self[i + 1]}'`) end
-			table.insert(res, { value = self[i] :: number, mod = self[i + 1] :: string })
+			res[self[i + 1] :: string] = self[i] :: number
 		end
 		return res
+	end
+
+	function exports.legacyEaseMod( -- basically mod_ease from exschwasion's template, starts at a value, eases towards it, then resets right after
+		beat: number,
+		length: number,
+		startValue: number,
+		targetValue: number,
+		mod: Types.mods,
+		easing: _E.easingType,
+		playerId: number?,
+		persistBeats: number?
+	)
+		local thisMod = mod :: string
+		_F.setMod { beat = beat, mod = { [thisMod] = startValue }, player = playerId }
+		_F.easeMod { beat = beat, length = length, mod = { [thisMod] = targetValue }, easing = easing, playerId = playerId }
+		_F.resetMod { beat = beat + length + (persistBeats or 0), only = { thisMod } }
 	end
 end
 

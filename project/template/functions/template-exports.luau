@@ -34,12 +34,9 @@ do --> "easeMod", "setMod", "resetMod"
 		beat: number,
 		length: number?,
 		easing: (_E.allEasings | _E.easingType)?,
-		mod: { value: number, mod: Types.mods } | { { value: number, mod: Types.mods } },
 		player: (number | { number })?,
 
-		relativeValue: boolean?, -- "relativeValue" and "add" are the same thing, add is only here as a shorthand
 		add: boolean?, -- "add" & "acc" from the mirin template don't exist here, use this value instead (add = easeMod, acc = setMod)
-
 		endMode: boolean?,
 		timeBased: boolean?,
 
@@ -53,7 +50,7 @@ do --> "easeMod", "setMod", "resetMod"
 		startTime: number,
 		easing: (number) -> number,
 		player: number,
-		mod: { { value: number, mod: Types.mods } },
+		mod: { [string]: number },
 
 		endMode: boolean?,
 		timeBased: boolean?,
@@ -66,7 +63,7 @@ do --> "easeMod", "setMod", "resetMod"
 		offset: number,
 	}
 	internals.__eases = {} :: { INTERNAL_ease }
-	function exports.easeMod(props: ease_props)
+	function exports.easeMod(props: ease_props & { mod: Types.modTable })
 		assureCaller("easeMod", false, true)
 
 		if not props.player then props.player = rawget(_G :: any, "affectedPlayers") or { 1, 2 } end -- i HATE metatables..
@@ -80,22 +77,17 @@ do --> "easeMod", "setMod", "resetMod"
 			timeBased = props.timeBased,
 			player = props.player,
 
-			relative = props.add or props.relativeValue,
+			relative = props.add,
 			reset = props.__reset,
 			only = props.__only,
 			exclude = props.__exclude,
+			mod = props.mod or {},
 		} :: INTERNAL_ease
 
 		if props.endMode then
 			thisEase.length -= thisEase.beat
 		end
 		thisEase.startTime = props.timeBased and props.beat or thisSong:GetElapsedTimeFromBeat(props.beat)
-
-		if type(props.mod) == "table" and (props.mod :: any)[1] == nil then
-			thisEase.mod = { props.mod :: any }
-		elseif type(props.mod) == "table" then
-			thisEase.mod = props.mod
-		end
 
 		if type(props.player) == "table" then
 			local savedEase = thisEase.easing
@@ -115,7 +107,7 @@ do --> "easeMod", "setMod", "resetMod"
 	end
 
 	--> setMod
-	function exports.setMod(props: ease_props)
+	function exports.setMod(props: ease_props & { mod: Types.modTable })
 		assureCaller("setMod", false, true)
 
 		props.length = 0
@@ -129,6 +121,7 @@ do --> "easeMod", "setMod", "resetMod"
 	type reset_props = ease_props & {
 		only: (Types.mods | { Types.mods })?,
 		exclude: { Types.mods }?,
+		mod: nil,
 	}
 	function exports.resetMod(props: reset_props)
 		assureCaller("resetMod", false, true)
@@ -149,7 +142,7 @@ do --> "easeMod", "setMod", "resetMod"
 			props.exclude = nil
 		end
 
-		exports.easeMod(props)
+		exports.easeMod(props :: any)
 
 		return exports.resetMod
 	end
@@ -313,7 +306,6 @@ do --> "bindFunction", "bindToUpdate", "easeFunction"
 		end
 
 		exports.bindToUpdate(thisFunction, true)
-
 		return exports.easeFunction
 	end
 end
@@ -336,19 +328,14 @@ do --> "setAlias", "setModDefault", "setAux", "makeNode", "defineMod"
 	do --> Hell. beware
 		type setModDefault_schema =
 			((value: number, mod: Types.mods) -> setModDefault_schema)
-			& (({ value: number, mod: Types.mods }) -> setModDefault_schema)
-			& (({ { value: number, mod: Types.mods } }) -> setModDefault_schema)
+			& ((Types.modTable) -> setModDefault_schema)
 		local function __setModDefault(...: any)
 			assureCaller("setModDefault", false, true)
 			local arg1: any, arg2: any = ...
 
 			if type(arg1) == "table" then
-				if type(arg1.mod) == "string" and type(arg1.value) == "number" then
-					internals.__defaultMods[string.lower(arg1.mod)] = arg1.value
-				else
-					for _, v in ipairs(arg1) do
-						internals.__defaultMods[string.lower(v.mod)] = v.value
-					end
+				for mod, value in pairs(arg1) do
+					internals.__defaultMods[string.lower(mod)] = value
 				end
 			elseif type(arg1) == "number" and type(arg2) == "string" then
 				internals.__defaultMods[string.lower(arg2)] = arg1
@@ -588,8 +575,9 @@ do --> Runtime
 
 		--> Eases
 		for _, ease in ipairs(internals.__eases) do
-			for _, modData in pairs(ease.mod) do
-				modData.mod = safeNormalizeModName(modData.mod)
+			for mod, value in pairs(ease.mod) do
+				ease.mod[mod] = nil
+				ease.mod[safeNormalizeModName(mod)] = value
 			end
 
 			if ease.exclude then
@@ -762,12 +750,12 @@ do --> Runtime
 			if ease.reset then
 				if ease.only then
 					for _, mod in ipairs(ease.only) do
-						table.insert(ease.mod, { mod = mod, value = internals.__defaultMods[mod] })
+						ease.mod[mod] = internals.__defaultMods[mod]
 					end
 				else
 					for mod in pairs(modTargets[player]) do
 						if not (ease.exclude and ease.exclude[mod]) and modTargets[player][mod] ~= internals.__defaultMods[mod] then
-							table.insert(ease.mod, { mod = mod, value = internals.__defaultMods[mod] })
+							ease.mod[mod] = internals.__defaultMods[mod]
 						end
 					end
 				end
@@ -776,12 +764,14 @@ do --> Runtime
 			local easeEndsAtDifferentPosition = ease.easing(1) >= 0.5
 			ease.offset = easeEndsAtDifferentPosition and 1 or 0
 
-			for _, mod in ipairs(ease.mod) do
+			for mod in pairs(ease.mod) do
 				if not ease.relative then
-					mod.value -= modTargets[player][mod.mod]
+					ease.mod[mod] -= modTargets[player][mod]
 				end
 
-				if easeEndsAtDifferentPosition then modTargets[player][mod.mod] = modTargets[player][mod.mod] + mod.value end
+				if easeEndsAtDifferentPosition then
+					modTargets[player][mod] += ease.mod[mod]
+				end
 			end
 
 			table.insert(activeEases, ease)
@@ -797,14 +787,14 @@ do --> Runtime
 
 			if measure < ease.beat + ease.length then
 				local eased = ease.easing((measure - ease.beat) / ease.length) - ease.offset
-				for _, mod in ipairs(ease.mod) do
-					modValues[player][mod.mod] = modValues[player][mod.mod] + eased * mod.value
+				for mod, value in pairs(ease.mod) do
+					modValues[player][mod] += eased * value
 				end
 
 				activeEasesIndex += 1
 			else
-				for _, mod in ipairs(ease.mod) do
-					exports.touchMod(mod.mod)
+				for mod in pairs(ease.mod) do
+					exports.touchMod(mod)
 				end
 
 				if activeEasesIndex ~= #activeEases then
@@ -987,11 +977,11 @@ do --> Setup mods
 		defer = true,
 	}
 	exports.setModDefault {
-		{ value = 100, mod = "zoom" },
-		{ value = 100, mod = "zoomx" },
-		{ value = 100, mod = "zoomy" },
-		{ value = 100, mod = "zoomz" },
-		{ value = 400, mod = "grain" },
+		zoom = 100,
+		zoomx = 100,
+		zoomy = 100,
+		zoomyz = 100,
+		grain = 400,
 	}
 
 	--> movex, movey, movez
@@ -1011,7 +1001,7 @@ do --> Setup mods
 	end
 
 	--> xmod, cmod
-	exports.setModDefault { { value = 1, mod = "xmod" } }
+	exports.setModDefault { xmod = 1 }
 	exports.defineMod {
 		modName = { "xmod", "cmod" },
 		method = function(xmod, cmod, playerId)

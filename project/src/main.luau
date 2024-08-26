@@ -46,8 +46,5 @@ return function()
 	-- and its yours
 
 	-- Mod example:
-	_F.setModDefault {
-		{ value = 3, mod = "xmod" },
-		{ value = 100, mod = "confusion" },
-	}
+	_F.setModDefault { xmod = 3, confusion = 100 }
 end
