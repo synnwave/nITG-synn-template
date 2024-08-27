@@ -173,9 +173,7 @@ return function(self: ActorFrame)
 
 		function synn.resolveLuaPath(path: string, sourcePoint: (number | string)?)
 			local source
-			if type(sourcePoint) == "string" then
-				source = sourcePoint
-			else
+			if type(sourcePoint) ~= "string" then
 				local level = sourcePoint or 2
 				local info
 				repeat
@@ -185,16 +183,18 @@ return function(self: ActorFrame)
 						level += 1
 					end
 				until source or not info
+
+				if type(source) == "string" and (string.sub(source, 1, 1) == "@" and string.sub(path, 1, 6) ~= "/Songs") then
+					source = string.sub(source, 2)
+					local filePath = string.split(source, "/")
+					filePath = filePath[#filePath] -- lol
+					if filePath then source = string.sub(source, 1, -string.len(filePath) - 1) end
+				end
+			else
+				source = sourcePoint
 			end
 
-			if type(source) == "string" and string.sub(source, 1, 1) == "@" and string.sub(path, 1, 6) ~= "/Songs" then
-				source = string.sub(source, 2)
-				local filePath = string.split(source, "/")
-				filePath = filePath[#filePath] -- lol
-				if filePath then source = string.sub(source, 1, -string.len(filePath) - 1) end
-				path = source .. path
-			end
-
+			if type(source) == "string" then path = source .. path end
 			path = synn.normalizePath(path)
 			if string.sub(path, -4) == ".lua" then path = string.sub(path, 1, -5) end
 

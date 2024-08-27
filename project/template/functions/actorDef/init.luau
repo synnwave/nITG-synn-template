@@ -98,6 +98,7 @@ type defConstructors = {
 	Sprite: innerConstructor<Types.Sprite>,
 	Quad: innerConstructor<Types.Quad>,
 	Plugin: innerConstructor<Types.Actor>,
+	ClearZBuffer: innerConstructor<Types.Quad>,
 	[string]: innerConstructor<Types.Actor>,
 }
 
@@ -167,7 +168,7 @@ do
 	end
 end
 
-local actorAliases = { Quad = "Sprite", Plugin = "Actor" }
+local actorAliases = { Quad = "Sprite", Plugin = "Actor", ClearZBuffer = "Sprite" }
 local classConstructorCaches = {}
 local pluginActor
 local function _constructor(class: string)
@@ -194,11 +195,15 @@ local function _constructor(class: string)
 				__isActorFrame = isActorFrame,
 			} :: class_params<any>,
 			actorMetatable
-		)
+		) :: class<Types.Actor>
 
 		self:__iterChildren(false)
 		table.insert(exports.__classes, self)
 		if class == "Plugin" then pluginActor:appendChild(self) end
+		if class == "ClearZBuffer" then
+			self.__className = "Quad"
+			self:cmd("blend,noeffect;clearzbuffer,1")
+		end
 
 		return self
 	end
@@ -210,8 +215,7 @@ end
 exports.createActor = (_constructor :: any) :: constructor
 exports.Def = (
 	setmetatable({}, { __index = function(_, k) return _constructor(k) end }) :: any
-) :: typeof(setmetatable({}, {} :: defConstructors))
-
+) :: typeof(setmetatable({} :: { RootPath: string }, {} :: defConstructors))
 pluginActor = exports.Def.ActorFrame {}
 
 -- time for internal stuff --
@@ -383,6 +387,8 @@ end
 local resolvePathsFor = { "File", "Texture" }
 local resolvePathsFor2 = { "Frag", "Vert", "Font" } -- these paths will be handled differently
 local rootPath = string.rep("../", #string.split(_G.resolveLuaPath(""), "/")) -- this line is terrible, but it's for the reason above
+exports.Def.RootPath = rootPath
+
 local propertyQueues = {
 	Name = "SetName",
 	Text = "settext",
