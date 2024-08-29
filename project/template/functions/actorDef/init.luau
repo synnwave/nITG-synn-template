@@ -4,14 +4,14 @@ local Types = require("../../types/TypeDefs")
 local _G = require("../../globals")
 local _ENV = _G._G
 
-export type class_params<Class> = {
+export type class_params = {
 	__className: string,
 	__children: { any },
 	__functionQueue: { any },
 	__resolved: boolean,
 	__props: { [any]: any },
 	__source: string,
-	__rawClass: Class,
+	__rawClass: any,
 	__isActorFrame: boolean,
 
 	[string]: any,
@@ -26,7 +26,7 @@ export type class_schema<Class> = {
 	__newindex: (self: class<Class>, k: string, v: any) -> (),
 	__call: (self: class<Class>, child: (string | number)?) -> Types.Actor?,
 }
-export type class<Class> = Class & typeof(setmetatable({} :: class_params<Class>, {} :: class_schema<Class>))
+export type class<Class> = Class & typeof(setmetatable({} :: class_params, {} :: class_schema<Class>)) & { [string]: any }
 
 local exports = {}
 exports.__classes = {} :: { class<any> }
@@ -47,49 +47,48 @@ type baseConstructorProps<T> = {
 	OnCommand: (string | ((self: T) -> ()))?,
 	LoadCommand: (string | ((self: T) -> ()))?,
 
-	[string]: any,
-}
-type constructorProps_ActorScroller = baseConstructorProps<Types.ActorScroller> & {
+	--> ActorScroller properties
 	UseScroller: number?,
 	SecondsPerItem: number?,
 	NumItemsToDraw: number?,
 	ItemPaddingStart: number?,
 	ItemPaddingEnd: number?,
 	TransformFunction: ((self: Types.ActorScroller, offset: number, itemIndex: number, numItems: number) -> ())?,
-	[string]: any,
-}
-type constructorProps_ActorFrame = baseConstructorProps<Types.ActorFrame> & {
+
+	--> ActorFrame properties
 	FOV: number?,
 	VanishX: number?,
 	VanishY: number?,
 	FarDist: number?,
-	[string]: any,
-}
-type constructorProps_Polygon = baseConstructorProps<Types.Polygon> & {
+
+	--> Polygon properties
 	DrawMode: (number | string | "triangles" | "quads" | "quadstrip" | "strip" | "linestrip")?,
 	Vertices: number?,
+
 	[string]: any,
 }
+
 type innerConstructor<T> = (props: baseConstructorProps<T>) -> class<T>
 type constructor =
 	((class: "Actor") -> innerConstructor<Types.Actor>)
-	& ((class: "ActorFrame") -> (props: constructorProps_ActorFrame) -> class<Types.ActorFrame>)
-	& ((class: "ActorScroller") -> (props: constructorProps_ActorScroller) -> class<Types.ActorScroller>)
-	& ((class: "Polygon") -> (props: constructorProps_Polygon) -> class<Types.Polygon>)
+	& ((class: "ActorFrame") -> innerConstructor<Types.ActorFrame>)
+	& ((class: "ActorScroller") -> innerConstructor<Types.ActorScroller>)
+	& ((class: "Polygon") -> innerConstructor<Types.Polygon>)
 	& ((class: "ActorFrameTexture") -> innerConstructor<Types.ActorFrameTexture>)
 	& ((class: "ActorProxy") -> innerConstructor<Types.ActorProxy>)
 	& ((class: "ActorSound") -> innerConstructor<Types.ActorSound>)
 	& ((class: "BitmapText") -> innerConstructor<Types.BitmapText>)
 	& ((class: "Model") -> innerConstructor<Types.Model>)
 	& ((class: "Sprite") -> innerConstructor<Types.Sprite>)
-	& ((class: "Quad") -> innerConstructor<Types.Quad>)
+	& ((class: "Quad") -> innerConstructor<Types.Sprite>)
 	& ((class: "Plugin") -> innerConstructor<Types.Actor>)
+	& ((class: "ClearZBuffer") -> innerConstructor<Types.Quad>)
 type defConstructors = {
 	__index: defConstructors,
 	Actor: innerConstructor<Types.Actor>,
-	ActorFrame: (props: constructorProps_ActorFrame) -> class<Types.ActorFrame>,
-	ActorScroller: (props: constructorProps_ActorScroller) -> class<Types.ActorScroller>,
-	Polygon: (props: constructorProps_Polygon) -> class<Types.Polygon>,
+	ActorFrame: innerConstructor<Types.ActorFrame>,
+	ActorScroller: innerConstructor<Types.ActorScroller>,
+	Polygon: innerConstructor<Types.Polygon>,
 	ActorFrameTexture: innerConstructor<Types.ActorFrameTexture>,
 	ActorProxy: innerConstructor<Types.ActorProxy>,
 	ActorSound: innerConstructor<Types.ActorSound>,
@@ -99,6 +98,7 @@ type defConstructors = {
 	Quad: innerConstructor<Types.Quad>,
 	Plugin: innerConstructor<Types.Actor>,
 	ClearZBuffer: innerConstructor<Types.Quad>,
+
 	[string]: innerConstructor<Types.Actor>,
 }
 
@@ -193,7 +193,7 @@ local function _constructor(class: string)
 				__source = _G.resolveLuaPath("", 3) .. "/",
 				__rawClass = actorClass,
 				__isActorFrame = isActorFrame,
-			} :: class_params<any>,
+			} :: class_params,
 			actorMetatable
 		) :: class<Types.Actor>
 
@@ -406,7 +406,7 @@ local propertyAliases = {
 function exports.__init()
 	--> Resolve actor properties
 	local classesToRemove = {}
-	local function iterClasses(currentClass: { class<Types.Actor> })
+	local function iterClasses(currentClass: { any })
 		for _, this in ipairs(currentClass) do
 			if not this.__resolved then
 				local props = this.__props

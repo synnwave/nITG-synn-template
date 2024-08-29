@@ -483,7 +483,7 @@ do --> Runtime
 	local lastSeenAwake = {}
 
 	--> Poptions table
-	local poptions = {} :: { { [string]: any } }
+	local poptions = {} :: { { [string]: number } }
 	local poptionsLoggingTarget = nil
 	for playerId = 1, _G.PLAYER_COUNT do
 		local playerMods = modValues[playerId]

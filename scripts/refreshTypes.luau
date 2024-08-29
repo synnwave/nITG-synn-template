@@ -14,8 +14,7 @@ return function()
 			local utils = require("mock/utilities")
 			utils.beginMock(true)
 			local function createActor(thisType: string)
-				thisType = thisType or "Sprite"
-				if thisType == "" or thisType == "Actor" then thisType = "Sprite" end -- just to be safe, make any "Actor" declarations a sprite instead
+				if thisType == "" or thisType == "Actor" or not thisType then thisType = "Sprite" end -- just to be safe, make any "Actor" declarations a sprite instead
 				if not extractedTypes[thisType] then extractedTypes[thisType] = {} end
 
 				return function(props: { [any]: any })
