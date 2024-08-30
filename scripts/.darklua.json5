@@ -1,5 +1,5 @@
 {
-  rules: [
+  "rules": [
     "remove_types",
     "remove_interpolated_string",
     "remove_compound_assignment",
@@ -17,6 +17,6 @@
     "rename_variables", // comment this line if you're debugging! this line is enabled by default to save on file sizes.
 
     "remove_function_call_parens",
-    "compute_expression",
-  ],
+    "compute_expression"
+  ]
 }

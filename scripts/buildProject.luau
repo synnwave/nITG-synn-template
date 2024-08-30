@@ -43,7 +43,7 @@ return function()
 	end)
 
 	--> process!
-	process.spawn("darklua", { "process", outputDir, outputDir }, {
+	process.spawn("darklua", { "process", outputDir, outputDir, "--config", "scripts/.darklua.json5" }, {
 		stdio = "forward",
 	})
 
@@ -59,8 +59,7 @@ return function()
 			end
 
 			local fileContents = fs.readFile(thisFile)
-			fileContents =
-				`-- Don't edit this script! File processed using darklua --> https://darklua.com/\n{fileContents}` --> Add darklua comment
+			fileContents = `-- Don't edit this script! File processed using darklua --> https://darklua.com/\n{fileContents}` --> Add darklua comment
 			fileContents = fileContents:gsub("for .-do", function(str) --> Fix loops
 				-- TODO: make this not fuck up when there's a string with the word "for" in it 😭
 				local variablesToFix = str:match("for (.-) in") or str:match("for (.-)=")
